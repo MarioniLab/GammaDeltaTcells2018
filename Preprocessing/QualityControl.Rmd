@@ -17,17 +17,19 @@ This script performs basic filtering steps for quality control and visualizes ma
 # Read in the data
 
 ```{r}
-library(DESeq2)
+suppressMessages(library(DESeq2))
 library(openxlsx)
 library(ggplot2)
 library(pheatmap)
 library(viridis)
-data.all <- read.table("../Data/GammaDelta_all.txt", sep = "\t", header = TRUE)
+data.all <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/GammaDelta_all.txt", sep = "\t", header = TRUE)
 
-meta <- read.csv("../Data/Metadata.csv", stringsAsFactors = FALSE)
+# Collect metadata on cells
+meta <- read.csv("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/Metadata.csv", stringsAsFactors = FALSE)
 meta <- meta[1:48,]
 
-marker <- read.csv("../Data/Genelist.csv", stringsAsFactors = FALSE)
+# Load marker genes for T cells
+marker <- read.csv("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/Genelist.csv", stringsAsFactors = FALSE)
 marker <- marker[marker[,1] != '',]
 marker <- marker[grepl("ENS", marker$Ensembl.ID),]
 
@@ -41,6 +43,7 @@ colnames(data.all) <- paste(sapply(meta$condtition, function(n){unlist(strsplit(
                            meta$DO.number,
                            sep = "_")
 
+# Generate dataframe that contains all quality features
 Master.QC <- data.frame(row.names = colnames(data.all))
 Master.QC$Condition <- paste(sapply(meta$condtition, function(n){unlist(strsplit(n, " "))[1]}),
                            sapply(sapply(meta$condtition, 
@@ -59,6 +62,7 @@ Master.QC$ERCC <- colSums(data.all[grepl("ERCC", rownames(data.all)),])
 Master.QC$Total <- colSums(data.all)
 Master.QC$NoCells <- meta$n.of.cells
 
+# Collect all biological genes
 data.all <- data.all[grepl("ENSM", rownames(data.all)),]
 
 Master.QC$Exonic <- colSums(data.all)
@@ -104,14 +108,16 @@ ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotAligned/To
 # Percent multimapping reads
 ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotUnique/Total, colour = Condition))
 
+# Write out the final dataset
 data.all <- data.all[,rownames(Master.QC)]
 
-write.table(data.all, "../Data/FilteredCounts.txt", sep = "\t")
+write.table(data.all, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/FilteredCounts.txt", sep = "\t")
 ```
 
 # Normalization
 
 ```{r}
+# Use DESeq2 for normalisation
 dds <- DESeqDataSetFromMatrix(countData = data.all, 
                               colData = data.frame(row.names = rownames(Master.QC),
                                                    groups = Master.QC$Condition),
@@ -121,12 +127,13 @@ dds <- DESeq2::estimateSizeFactors(dds)
 
 norm <- counts(dds, normalized = TRUE)
 
-write.table(norm, "../Data/NormCounts.txt", sep = "\t")
+write.table(norm, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t")
 ```
 
 # PCA
 
 ```{r}
+# Compute PCA on normalized counts
 pca <- prcomp(t(log10(norm + 1)))
 ggplot(data.frame(condition = Master.QC$Condition,
                   PC1 = pca$x[,1],
@@ -139,6 +146,7 @@ PC1 splits Th1 and Th17, PC2 splits the receptor subclasses.
 # Marker genes
 
 ```{r, fig.height=15, fig.width = 8}
+# Visualize marker genes
 pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE, 
          labels_row = marker$Gene..MGI.Symbol., show_colnames = FALSE,
          cellheight = 8, fontsize = 8, color = viridis(100),
