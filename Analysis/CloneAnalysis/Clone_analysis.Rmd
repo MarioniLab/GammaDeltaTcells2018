@@ -1,0 +1,324 @@
+---
+title: "Plotting script for clone analysis"
+author: "Nils Eling"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Read in data
+
+```{r}
+library(plyr)
+library(reshape2)
+library(ggplot2)
+all.files <- list.files("Txt_files/", full.names = TRUE)
+
+Vg1.y.d <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg1" , n) & grepl("young" , n) & grepl("TRD" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg1.y.d <- Vg1.y.d[!unlist(lapply(Vg1.y.d, is.null))]
+
+Vg1.y.d <- lapply(Vg1.y.d, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg1.y.d, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg1 young delta chain usage")
+```
+
+```{r}
+Vg1.o.d <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg1" , n) & grepl("old" , n) & grepl("TRD" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg1.o.d <- Vg1.o.d[!unlist(lapply(Vg1.o.d, is.null))]
+
+Vg1.o.d <- lapply(Vg1.o.d, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg1.o.d, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg1 old delta chain usage")
+```
+
+```{r}
+Vg4.y.d.Th1 <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRD" , n) & grepl("Th1" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg4.y.d.Th1 <- Vg4.y.d.Th1[!unlist(lapply(Vg4.y.d.Th1, is.null))]
+
+Vg4.y.d.Th1 <- lapply(Vg4.y.d.Th1, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg4.y.d.Th1, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 young Th1 delta chain usage")
+```
+
+```{r}
+Vg4.o.d.Th1 <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRD" , n) & grepl("Th1" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg4.o.d.Th1 <- Vg4.o.d.Th1[!unlist(lapply(Vg4.o.d.Th1, is.null))]
+
+Vg4.o.d.Th1 <- lapply(Vg4.o.d.Th1, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg4.o.d.Th1, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 old Th1 delta chain usage")
+```
+
+```{r}
+Vg4.y.d.Th17 <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg4.y.d.Th17 <- Vg4.y.d.Th17[!unlist(lapply(Vg4.y.d.Th17, is.null))]
+
+Vg4.y.d.Th17 <- lapply(Vg4.y.d.Th17, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg4.y.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 young Th17 delta chain usage")
+```
+
+```{r}
+Vg4.o.d.Th17 <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg4.o.d.Th17 <- Vg4.o.d.Th17[!unlist(lapply(Vg4.o.d.Th17, is.null))]
+
+Vg4.o.d.Th17 <- lapply(Vg4.o.d.Th17, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg4.o.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 old Th17 delta chain usage")
+```
+
+```{r}
+Vg6.y.d.Th17 <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg6" , n) & grepl("young" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg6.y.d.Th17 <- Vg6.y.d.Th17[!unlist(lapply(Vg6.y.d.Th17, is.null))]
+
+Vg6.y.d.Th17 <- lapply(Vg6.y.d.Th17, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg6.y.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg6 young Th17 delta chain usage")
+```
+
+```{r}
+Vg6.o.d.Th17 <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg6" , n) & grepl("old" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+Vg6.o.d.Th17 <- Vg6.o.d.Th17[!unlist(lapply(Vg6.o.d.Th17, is.null))]
+
+Vg6.o.d.Th17 <- lapply(Vg6.o.d.Th17, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Sum across clone faction
+sum.list <- lapply(Vg6.o.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+
+# Merge into one dataframe
+mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
+              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
+rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+
+for(i in 1:ncol(mat)){
+  cur_n <- sum.list[[i]]
+  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
+}
+mat[is.na(mat)] <- 0
+
+# Plot results
+df.melt <- melt(as.data.frame(t(mat)))
+# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+
+ggplot(df.melt, aes(variable, value)) + geom_point() + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg6 old Th17 delta chain usage")
+```

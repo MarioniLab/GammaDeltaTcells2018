@@ -1,0 +1,148 @@
+---
+title: "Quality Control"
+author: "Nils Eling"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This script performs basic filtering steps for quality control and visualizes marker genes for the cell types.
+
+# Read in the data
+
+```{r}
+library(DESeq2)
+library(openxlsx)
+library(ggplot2)
+library(pheatmap)
+library(viridis)
+data.all <- read.table("../Data/GammaDelta_all.txt", sep = "\t", header = TRUE)
+
+meta <- read.csv("../Data/Metadata.csv", stringsAsFactors = FALSE)
+meta <- meta[1:48,]
+
+marker <- read.csv("../Data/Genelist.csv", stringsAsFactors = FALSE)
+marker <- marker[marker[,1] != '',]
+marker <- marker[grepl("ENS", marker$Ensembl.ID),]
+
+colnames(data.all) <- paste(sapply(meta$condtition, function(n){unlist(strsplit(n, " "))[1]}),
+                           sapply(sapply(meta$condtition, 
+                                         function(n){unlist(strsplit(n, " "))[2]}), 
+                                  function(x){unlist(strsplit(x, "-"))[1]}),
+                           sapply(sapply(meta$condtition, 
+                                         function(n){unlist(strsplit(n, " "))[2]}), 
+                                  function(x){unlist(strsplit(x, "-"))[2]}),
+                           meta$DO.number,
+                           sep = "_")
+
+Master.QC <- data.frame(row.names = colnames(data.all))
+Master.QC$Condition <- paste(sapply(meta$condtition, function(n){unlist(strsplit(n, " "))[1]}),
+                           sapply(sapply(meta$condtition, 
+                                         function(n){unlist(strsplit(n, " "))[2]}), 
+                                  function(x){unlist(strsplit(x, "-"))[1]}),
+                           sapply(sapply(meta$condtition, 
+                                         function(n){unlist(strsplit(n, " "))[2]}), 
+                                  function(x){unlist(strsplit(x, "-"))[2]}),
+                           sep = "_")
+Master.QC$NoFeature <- as.numeric(data.all["__no_feature",])
+Master.QC$Ambiguous <- as.numeric(data.all["__ambiguous",])
+Master.QC$LowQual <- as.numeric(data.all["__too_low_aQual",])
+Master.QC$NotAligned <- as.numeric(data.all["__not_aligned",])
+Master.QC$NotUnique <- as.numeric(data.all["__alignment_not_unique",])
+Master.QC$ERCC <- colSums(data.all[grepl("ERCC", rownames(data.all)),])
+Master.QC$Total <- colSums(data.all)
+Master.QC$NoCells <- meta$n.of.cells
+
+data.all <- data.all[grepl("ENSM", rownames(data.all)),]
+
+Master.QC$Exonic <- colSums(data.all)
+Master.QC$NumberGenes <- apply(data.all, 2, function(n){sum(n > 0)})
+```
+
+# Quality control based on mapping features
+
+```{r}
+# Number of cells captured vs number exonic reads
+ggplot(Master.QC) + geom_point(aes(x = Exonic/Total, y = log10(NoCells), colour = Condition))
+
+# Percent of exonic reads vs percent of ERCC
+ggplot(Master.QC) + geom_point(aes(x = Exonic/Total, y = ERCC/Total, colour = Condition))
+meta[Master.QC$Exonic/Master.QC$Total < 0.225,]
+meta <- meta[Master.QC$Exonic/Master.QC$Total > 0.225,]
+Master.QC <- Master.QC[Master.QC$Exonic/Master.QC$Total > 0.225,]
+
+# Number of cells captured vs total reads
+ggplot(Master.QC) + geom_point(aes(x = log10(Total), y = log10(NoCells), colour = Condition))
+
+# Total reads
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = log10(Total), colour = Condition))
+meta[log10(Master.QC$Total) < 5,]
+Master.QC <- Master.QC[log10(Master.QC$Total) > 5,]
+
+# Number of genes detected
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NumberGenes, colour = Condition))
+Master.QC <- Master.QC[Master.QC$NumberGenes > 10000,]
+
+# Percent no feature reads
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NoFeature/Total, colour = Condition))
+
+# Percent ambiguous reads
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = Ambiguous/Total, colour = Condition))
+
+# Percent low quality reads
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = LowQual/Total, colour = Condition))
+
+# Percent not aligned reads
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotAligned/Total, colour = Condition))
+
+# Percent multimapping reads
+ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotUnique/Total, colour = Condition))
+
+data.all <- data.all[,rownames(Master.QC)]
+
+write.table(data.all, "../Data/FilteredCounts.txt", sep = "\t")
+```
+
+# Normalization
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = data.all, 
+                              colData = data.frame(row.names = rownames(Master.QC),
+                                                   groups = Master.QC$Condition),
+                              design = ~ groups)
+
+dds <- DESeq2::estimateSizeFactors(dds)
+
+norm <- counts(dds, normalized = TRUE)
+
+write.table(norm, "../Data/NormCounts.txt", sep = "\t")
+```
+
+# PCA
+
+```{r}
+pca <- prcomp(t(log10(norm + 1)))
+ggplot(data.frame(condition = Master.QC$Condition,
+                  PC1 = pca$x[,1],
+                  PC2 = pca$x[,2])) +
+  geom_point(aes(PC1, PC2, colour = condition))
+```
+
+PC1 splits Th1 and Th17, PC2 splits the receptor subclasses.
+
+# Marker genes
+
+```{r, fig.height=15, fig.width = 8}
+pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE, 
+         labels_row = marker$Gene..MGI.Symbol., show_colnames = FALSE,
+         cellheight = 8, fontsize = 8, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(norm),
+                                     condition = Master.QC$Condition))
+
+```
