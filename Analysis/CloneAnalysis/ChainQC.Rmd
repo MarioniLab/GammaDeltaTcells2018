@@ -129,7 +129,7 @@ Vg1.o.p
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
 Vg4.y.Th1 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRG" , n) & grepl("Th1" , n)){
+  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRG" , n) & !grepl("Th17" , n)){
     read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   }
 })
@@ -172,7 +172,7 @@ Vg4.y.Th1.p
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
 Vg4.o.Th1 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRG" , n) & grepl("Th1" , n)){
+  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRG" , n) & !grepl("Th17" , n)){
     read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   }
 })
