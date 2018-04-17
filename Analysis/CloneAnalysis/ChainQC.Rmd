@@ -16,7 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 This script visualizes the detection of gamma chanins in cell populations.
 Due to sorting cells based on their gamma chain, contaminations can be easily detected.
 
-# Read in data
+# Gamma chain usage
+
+## Read in data
 
 ```{r}
 library(plyr)
@@ -36,7 +38,7 @@ all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.c
 
 ```
 
-# Young V gamma 1 cells
+## Young V gamma 1 cells
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -79,7 +81,7 @@ Vg1.y.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg1.y.p
 ```
 
-# Old V gamma 1 cells
+## Old V gamma 1 cells
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -122,7 +124,7 @@ Vg1.o.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg1.o.p
 ```
 
-# Young V gamma 4 cells Th1 primed
+## Young V gamma 4 cells Th1 primed
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -165,7 +167,7 @@ Vg4.y.Th1.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg4.y.Th1.p
 ```
 
-# Old V gamma 4 cells Th1 primed
+## Old V gamma 4 cells Th1 primed
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -208,7 +210,7 @@ Vg4.o.Th1.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg4.o.Th1.p
 ```
 
-# Young V gamma 4 cells Th17 primed
+## Young V gamma 4 cells Th17 primed
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -251,7 +253,7 @@ Vg4.y.Th17.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg4.y.Th17.p
 ```
 
-# Old V gamma 4 cells Th17 primed
+## Old V gamma 4 cells Th17 primed
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -294,7 +296,7 @@ Vg4.o.Th17.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg4.o.Th17.p
 ```
 
-# Young V gamma 6 cells
+## Young V gamma 6 cells
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -337,7 +339,7 @@ Vg6.y.p <- ggplot(df.melt, aes(variable, value)) + geom_point() +
 Vg6.y.p
 ```
 
-# Old V gamma 6 cells
+## Old V gamma 6 cells
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
@@ -384,10 +386,146 @@ Save final figure
 
 ```{r}
 final <- plot_grid(Vg1.y.p, Vg1.o.p,
-                   Vg4.y.Th1.p, Vg4.y.Th1.p,
-                   Vg4.y.Th17.p, Vg4.y.Th17.p,
-                   Vg6.y.p, Vg6.y.p, ncol = 4, nrow = 2, align = "hv",
+                   Vg4.y.Th1.p, Vg4.o.Th1.p,
+                   Vg4.y.Th17.p, Vg4.o.Th17.p,
+                   Vg6.y.p, Vg6.o.p, ncol = 2, nrow = 4, align = "hv",
                    labels = "Auto")
 ggsave("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/GammaChainUsage_qualityControl.pdf", 
-       final, width = 7, height = 20)
+       final, width = 12, height = 15)
+```
+
+# Compare CDR3 sequences of Vg1 and Vg3 in Vg1 populations
+
+## Vg1 young
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg1.y <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg1" , n) & grepl("young" , n) & grepl("TRG" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+# Remove empty slots
+Vg1.y <- Vg1.y[!unlist(lapply(Vg1.y, is.null))]
+
+# Collect the clone fractions for variable clones
+Vg1.y <- lapply(Vg1.y, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Shorten the CDR3 sequence to the first 10 nt
+Vg1.y <- lapply(Vg1.y, function(n){
+  n$clonalSequence <-  sapply(n$clonalSequence, function(x){paste(unlist(strsplit(x, ""))[1:10], collapse = "")})
+  n
+})
+
+# Sum across similar sequences
+Vg1.y <- lapply(Vg1.y, function(n){ddply(n, c("allVHitsWithScore", "clonalSequence"), summarise, sum = sum(cloneFraction))})
+
+# Collect Clone fractions for Vg1 and Vg3 chains
+Vg1.y.mat <- lapply(Vg1.y, function(n){
+  cur_mat <- matrix(0, ncol = 2, nrow = length(unique(n$clonalSequence)))
+  colnames(cur_mat) <- c("Vg1", "Vg3")
+  rownames(cur_mat) <- unique(n$clonalSequence)
+  cur_mat[n$clonalSequence[n$allVHitsWithScore ==  "TCRG-V1"],1] <-
+    n$sum[n$allVHitsWithScore ==  "TCRG-V1"]
+  cur_mat[n$clonalSequence[n$allVHitsWithScore ==  "TCRG-V3"],2] <-
+    n$sum[n$allVHitsWithScore ==  "TCRG-V3"]
+  cur_mat
+})
+
+# Combine results in one dataframe
+df <- data.frame(clones = c(rownames(Vg1.y.mat[[1]]), rownames(Vg1.y.mat[[2]]),
+                            rownames(Vg1.y.mat[[3]]), rownames(Vg1.y.mat[[4]]),
+                            rownames(Vg1.y.mat[[5]]), rownames(Vg1.y.mat[[6]])),
+                 Vg1 = c(Vg1.y.mat[[1]][,1], Vg1.y.mat[[2]][,1],
+                         Vg1.y.mat[[3]][,1], Vg1.y.mat[[4]][,1],
+                         Vg1.y.mat[[5]][,1], Vg1.y.mat[[6]][,1]),
+                 Vg3 = c(Vg1.y.mat[[1]][,2], Vg1.y.mat[[2]][,2],
+                         Vg1.y.mat[[3]][,2], Vg1.y.mat[[4]][,2],
+                         Vg1.y.mat[[5]][,2], Vg1.y.mat[[6]][,2]),
+                 Replicate = factor(c(rep(1, nrow(Vg1.y.mat[[1]])), rep(2, nrow(Vg1.y.mat[[2]])),
+                               rep(3, nrow(Vg1.y.mat[[3]])), rep(4, nrow(Vg1.y.mat[[4]])),
+                               rep(5, nrow(Vg1.y.mat[[5]])), rep(6, nrow(Vg1.y.mat[[6]])))))
+
+# Plot results
+Vg1.y.clones <- ggplot(df) + geom_point(aes(Vg1, Vg3)) + facet_grid(.~Replicate) + ggtitle("Vg1 young") + theme_bw() + theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black"))
+Vg1.y.clones
+```
+
+## Vg1 old
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg1.o <- lapply(as.list(all.files), function(n){
+  if(grepl("Vg1" , n) & grepl("old" , n) & grepl("TRG" , n)){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  }
+})
+# Remove empty slots
+Vg1.o <- Vg1.o[!unlist(lapply(Vg1.o, is.null))]
+
+# Collect the clone fractions for variable clones
+Vg1.o <- lapply(Vg1.o, function(n){
+  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
+  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+  n
+})
+
+# Shorten the CDR3 sequence to the first 10 nt
+Vg1.o <- lapply(Vg1.o, function(n){
+  n$clonalSequence <-  sapply(n$clonalSequence, function(x){paste(unlist(strsplit(x, ""))[1:10], collapse = "")})
+  n
+})
+
+# Sum across similar sequences
+Vg1.o <- lapply(Vg1.o, function(n){ddply(n, c("allVHitsWithScore", "clonalSequence"), summarise, sum = sum(cloneFraction))})
+
+# Collect Clone fractions for Vg1 and Vg3 chains
+Vg1.o.mat <- lapply(Vg1.o, function(n){
+  cur_mat <- matrix(0, ncol = 2, nrow = length(unique(n$clonalSequence)))
+  colnames(cur_mat) <- c("Vg1", "Vg3")
+  rownames(cur_mat) <- unique(n$clonalSequence)
+  cur_mat[n$clonalSequence[n$allVHitsWithScore ==  "TCRG-V1"],1] <-
+    n$sum[n$allVHitsWithScore ==  "TCRG-V1"]
+  cur_mat[n$clonalSequence[n$allVHitsWithScore ==  "TCRG-V3"],2] <-
+    n$sum[n$allVHitsWithScore ==  "TCRG-V3"]
+  cur_mat
+})
+
+# Combine results in one dataframe
+df <- data.frame(clones = c(rownames(Vg1.o.mat[[1]]), rownames(Vg1.o.mat[[2]]),
+                            rownames(Vg1.o.mat[[3]]), rownames(Vg1.o.mat[[4]]),
+                            rownames(Vg1.o.mat[[5]])),
+                 Vg1 = c(Vg1.o.mat[[1]][,1], Vg1.o.mat[[2]][,1],
+                         Vg1.o.mat[[3]][,1], Vg1.o.mat[[4]][,1],
+                         Vg1.o.mat[[5]][,1]),
+                 Vg3 = c(Vg1.o.mat[[1]][,2], Vg1.o.mat[[2]][,2],
+                         Vg1.o.mat[[3]][,2], Vg1.o.mat[[4]][,2],
+                         Vg1.o.mat[[5]][,2]),
+                 Replicate = factor(c(rep(1, nrow(Vg1.o.mat[[1]])), rep(2, nrow(Vg1.o.mat[[2]])),
+                               rep(3, nrow(Vg1.o.mat[[3]])), rep(4, nrow(Vg1.o.mat[[4]])),
+                               rep(5, nrow(Vg1.o.mat[[5]])))))
+
+# Plot results
+Vg1.o.clones <- ggplot(df) + geom_point(aes(Vg1, Vg3)) + facet_grid(.~Replicate) + ggtitle("Vg1 old") + theme_bw() + theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.background = element_blank(),
+        panel.border = element_rect(colour = "black"))
+Vg1.o.clones
+```
+
+Save Figure
+
+```{r}
+final <- plot_grid(Vg1.y.clones,
+                   Vg1.o.clones, ncol = 1, nrow = 2)
+
+ggsave("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_Vg3_CDR3overlap.pdf", 
+       final, width = 12, height = 8)
 ```
