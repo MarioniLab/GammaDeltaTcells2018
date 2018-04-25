@@ -18,8 +18,8 @@ This script performs basic filtering steps for quality control and visualizes ma
 
 # Read in the data
 
-```{r}
-suppressMessages(library(DESeq2))
+```{r read-data, message=FALSE}
+library(DESeq2)
 library(openxlsx)
 library(ggplot2)
 library(pheatmap)
@@ -110,6 +110,10 @@ ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotAligned/To
 # Percent multimapping reads
 ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotUnique/Total, colour = Condition))
 
+# Visualize dendrogram based on spearman correlation
+dend <- hclust(as.dist(cor(log10(data.all + 1), method = "pearson")))
+plot(dend)
+
 # Write out the final dataset
 data.all <- data.all[,rownames(Master.QC)]
 
@@ -155,4 +159,12 @@ pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE,
          annotation_col = data.frame(row.names = colnames(norm),
                                      condition = Master.QC$Condition))
 
+```
+
+# Dendogram of normalized counts
+
+```{r}
+# Visualize dendrogram based on spearman correlation
+dend <- hclust(as.dist(cor(log10(norm + 1), method = "pearson")))
+plot(dend)
 ```
