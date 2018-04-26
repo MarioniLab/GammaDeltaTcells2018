@@ -112,8 +112,14 @@ ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotUnique/Tot
 
 # Visualize dendrogram based on spearman correlation
 dend <- hclust(as.dist(cor(log10(data.all + 1), method = "pearson")))
-plot(dend)
+plot(dend, hang=-1, cex=0.7)
 
+# Visualize dendrogram based on euclidean distance
+dend <- hclust(dist(log10(t(data.all[,rownames(Master.QC)]) + 1)), method = "ward.D2")
+plot(dend, hang=-1, cex=0.7)
+```
+
+```{r save}
 # Write out the final dataset
 data.all <- data.all[,rownames(Master.QC)]
 
@@ -165,6 +171,6 @@ pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE,
 
 ```{r}
 # Visualize dendrogram based on spearman correlation
-dend <- hclust(as.dist(cor(log10(norm + 1), method = "pearson")))
-plot(dend)
+dend <- hclust(dist(log10(t(norm + 1)), method = "ward.D2")
+plot(dend, hang=-1, cex=0.7)
 ```
