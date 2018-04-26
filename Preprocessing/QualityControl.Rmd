@@ -93,6 +93,7 @@ Master.QC <- Master.QC[log10(Master.QC$Total) > 5,]
 
 # Number of genes detected
 ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NumberGenes, colour = Condition))
+meta[Master.QC$NumberGenes < 10000,]
 Master.QC <- Master.QC[Master.QC$NumberGenes > 10000,]
 
 # Percent no feature reads
@@ -111,7 +112,7 @@ ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotAligned/To
 ggplot(Master.QC) + geom_point(aes(x = seq(1:nrow(Master.QC)), y = NotUnique/Total, colour = Condition))
 
 # Visualize dendrogram based on spearman correlation
-dend <- hclust(as.dist(cor(log10(data.all + 1), method = "pearson")))
+dend <- hclust(as.dist(sqrt(1 - cor(log10(data.all[,rownames(Master.QC)] + 1), method = "pearson"))/2), method = "ward.D2")
 plot(dend, hang=-1, cex=0.7)
 
 # Visualize dendrogram based on euclidean distance
@@ -170,7 +171,7 @@ pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE,
 # Dendogram of normalized counts
 
 ```{r}
-# Visualize dendrogram based on spearman correlation
-dend <- hclust(dist(log10(t(norm + 1)), method = "ward.D2")
+# Visualize dendrogram based on euclidean distance
+dend <- hclust(dist(log10(t(norm) + 1)), method = "ward.D2")
 plot(dend, hang=-1, cex=0.7)
 ```
