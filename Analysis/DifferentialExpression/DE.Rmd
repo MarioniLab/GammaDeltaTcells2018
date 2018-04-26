@@ -6,6 +6,8 @@ output:
   html_document:
     toc: true
     toc_depth: 2
+    knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
+        encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/RNAseq/DE.html') })
 ---
 
 ```{r setup, include=FALSE}
@@ -14,11 +16,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Load data
 
-```{r}
+```{r libraries, message=FALSE}
 library(DESeq2)
 library(openxlsx)
 library(goseq)
+library(GO.db)
+library(org.Mm.eg.db)
+```
 
+```{r, data}
 data.all <- read.table("../Data/FilteredCounts.txt", sep = "\t")
 data.all <- data.all[rowMeans(data.all) > 1,]
 
