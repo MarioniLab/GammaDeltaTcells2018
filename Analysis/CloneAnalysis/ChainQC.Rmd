@@ -25,6 +25,7 @@ library(plyr)
 library(reshape2)
 library(ggplot2)
 library(cowplot)
+library(openxlsx)
 source("../../Functions/auxiliary.R")
 
 # Read in mixcr mapping results - one chain per .txt file
@@ -59,6 +60,8 @@ Vg1.p <- ggplot(df.melt, aes(variable, value, fill = Age, group = Age)) +
   xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg1 gamma chain usage") +
   scale_fill_manual(values = c("white", "red"))
 Vg1.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRG/Vg1.xlsx")
 ```
 
 ## V gamma 4 cells Th1 primed
@@ -82,6 +85,8 @@ Vg4.Th1.p <- ggplot(df.melt, aes(variable, value, fill = Age, group = Age)) +
   xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg4 gamma chain usage Th1") +
   scale_fill_manual(values = c("white", "red"))
 Vg4.Th1.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRG/Vg4_Th1.xlsx")
 ```
 
 ## V gamma 4 cells Th17 primed
@@ -105,6 +110,8 @@ Vg4.Th17.p <- ggplot(df.melt, aes(variable, value, fill = Age, group = Age)) +
   xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg4 gamma chain usage Th17") +
   scale_fill_manual(values = c("white", "red"))
 Vg4.Th17.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRG/Vg4_Th17.xlsx")
 ```
 
 ## V gamma 6 cells
@@ -128,6 +135,8 @@ Vg6.p <- ggplot(df.melt, aes(variable, value, fill = Age, group = Age)) +
   xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg6 gamma chain usage") +
   scale_fill_manual(values = c("white", "red"))
 Vg6.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRG/Vg6.xlsx")
 ```
 
 Save final figure
