@@ -118,6 +118,9 @@ plot(dend, hang=-1, cex=0.7)
 # Visualize dendrogram based on euclidean distance
 dend <- hclust(dist(log10(t(data.all[,rownames(Master.QC)]) + 1)), method = "ward.D2")
 plot(dend, hang=-1, cex=0.7)
+
+# Remove one library due to a possible sample swap
+Master.QC <- Master.QC[!grepl("DO17940", rownames(Master.QC)),]
 ```
 
 ```{r save}
