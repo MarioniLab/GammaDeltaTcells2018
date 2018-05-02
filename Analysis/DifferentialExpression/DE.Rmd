@@ -6,7 +6,7 @@ output:
   html_document:
     toc: true
     toc_depth: 2
-    knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
         encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/RNAseq/DE.html') })
 ---
 
@@ -25,10 +25,10 @@ library(org.Mm.eg.db)
 ```
 
 ```{r, data}
-data.all <- read.table("../Data/FilteredCounts.txt", sep = "\t")
+data.all <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/FilteredCounts.txt", sep = "\t")
 data.all <- data.all[rowMeans(data.all) > 1,]
 
-genelength <- read.table("../Data/Genelength.txt", header = TRUE, sep = "\t")
+genelength <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/Genelength.txt", header = TRUE, sep = "\t")
 
 groups <- paste(sapply(colnames(data.all), 
                                     function(n){unlist(strsplit(n, "_"))[1]}),
@@ -39,19 +39,19 @@ groups <- paste(sapply(colnames(data.all),
                 sep = "_")
 
 # Read in genenames
-genes <- read.table("../Data/Mouse_genes.txt", sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+genes <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/Mouse_genes.txt", sep = "\t", header = TRUE, stringsAsFactors = FALSE)
 rownames(genes) <- genes$Gene.stable.ID
 
 # List of pairwise comparisons
-list.comp <- list("Vg1_Th1_young vs Vg4_Th1_young" = c("Vg1_Th1_young", "Vg4_Th1_young"),
-                  "Vg4_Th17_young vs Vg6_Th17_young" = c("Vg4_Th17_young", "Vg6_Th17_young"),
+list.comp <- list(#"Vg1_Th1_young vs Vg4_Th1_young" = c("Vg1_Th1_young", "Vg4_Th1_young"),
+                  #"Vg4_Th17_young vs Vg6_Th17_young" = c("Vg4_Th17_young", "Vg6_Th17_young"),
                   "Vg4_Th1_young vs Vg4_Th17_young" = c("Vg4_Th1_young", "Vg4_Th17_young"),
                   "Vg1_Th1_young vs Vg1_Th1_old" = c("Vg1_Th1_young", "Vg1_Th1_old"),
                   "Vg4_Th1_young vs Vg4_Th1_old" = c("Vg4_Th1_young", "Vg4_Th1_old"),
                   "Vg4_Th17_young vs Vg4_Th17_old" = c("Vg4_Th17_young", "Vg4_Th17_old"),
                   "Vg6_Th17_young vs Vg6_Th17_old" = c("Vg6_Th17_young", "Vg6_Th17_old"),
-                  "Vg1_Th1_old vs Vg4_Th1_old" = c("Vg1_Th1_old", "Vg4_Th1_old"),
-                  "Vg4_Th17_old vs Vg6_Th17_old" = c("Vg4_Th17_old", "Vg6_Th17_old"),
+                  #"Vg1_Th1_old vs Vg4_Th1_old" = c("Vg1_Th1_old", "Vg4_Th1_old"),
+                  #"Vg4_Th17_old vs Vg6_Th17_old" = c("Vg4_Th17_old", "Vg6_Th17_old"),
                   "Vg4_Th1_old vs Vg4_Th17_old" = c("Vg4_Th1_old", "Vg4_Th17_old"))
 ```
 
@@ -101,6 +101,19 @@ for(i in 1:length(list.comp)){
       GO.wall=goseq(pwf,"mm10","ensGene")
       enriched.GO=GO.wall[p.adjust(GO.wall$over_represented_pvalue,method="fdr")<.1,]
   }
+  
+  # Add genenames to the GO categories
+  if(nrow(enriched.GO) > 0){
+    all_genes <- vector(length = nrow(enriched.GO))
+    for(j in 1:nrow(enriched.GO)){
+      allegs = get(enriched.GO$category[j], org.Mm.egGO2ALLEGS)
+      genes.GO = unlist(mget(allegs,org.Mm.egSYMBOL))
+      genes.GO = as.character(genes.GO[genes.GO %in% cur_res.1$Genename])
+      all_genes[j] <- paste(genes.GO, collapse = ", ")
+    }
+    enriched.GO$Genes <- all_genes
+  }
+  
   cur_list.go[[levels(cur_dds$groups)[1]]] <- enriched.GO
   
   cur_genes <- as.integer(cur_res_all$padj < 0.1 & cur_res_all$log2FoldChange > 0)
@@ -114,9 +127,21 @@ for(i in 1:length(list.comp)){
       GO.wall=goseq(pwf,"mm10","ensGene")
       enriched.GO=GO.wall[p.adjust(GO.wall$over_represented_pvalue,method="fdr")<.1,]
   }
+  # Add genenames to the GO categories 
+  if(nrow(enriched.GO) > 0){
+    all_genes <- vector(length = nrow(enriched.GO))
+    for(j in 1:nrow(enriched.GO)){
+      allegs = get(enriched.GO$category[j], org.Mm.egGO2ALLEGS)
+      genes.GO = unlist(mget(allegs,org.Mm.egSYMBOL))
+      genes.GO = as.character(genes.GO[genes.GO %in% cur_res.2$Genename])
+      all_genes[j] <- paste(genes.GO, collapse = ", ")
+    }
+    enriched.GO$Genes <- all_genes
+  }
+  
   cur_list.go[[levels(cur_dds$groups)[2]]] <- enriched.GO
   
-  write.xlsx(cur_list, paste("../Results/Marker_genes/", names(list.comp)[i], ".xlsx", sep = ""))
-  write.xlsx(cur_list.go, paste("../Results/Marker_genes/", names(list.comp)[i], "_GO.xlsx", sep = ""))
+  write.xlsx(cur_list, paste("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/", names(list.comp)[i], ".xlsx", sep = ""))
+  write.xlsx(cur_list.go, paste("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/", names(list.comp)[i], "_GO.xlsx", sep = ""))
 }
 ```
