@@ -31,8 +31,8 @@ chain.prop <- function(files, keywords){
   
   # Merge into one dataframe
   mat <- matrix(data = NA, ncol = length(cur_files), 
-                nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-  rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+                nrow = length(unique(unlist(lapply(sum.list, function(n){n$allVHitsWithScore})))))
+  rownames(mat) <- as.character(unique(unlist(lapply(sum.list, function(n){n$allVHitsWithScore}))))
   colnames(mat) <- library.names
   
   for(i in 1:ncol(mat)){

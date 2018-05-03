@@ -68,10 +68,10 @@ write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analy
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
-Vg4.Th1.y <- chain.prop(all.files, keywords = c("Vg4", "young", "TRG", "Th1"))
+Vg4.Th1.y <- chain.prop(all.files, keywords = c("Vg4", "young", "TRG", "Th1-"))
 
 # Select gamma chain file for old V gamma 1 cells
-Vg4.Th1.o <- chain.prop(all.files, keywords = c("Vg4", "old", "TRG", "Th1"))
+Vg4.Th1.o <- chain.prop(all.files, keywords = c("Vg4", "old", "TRG", "Th1-"))
 
 # Plot results
 df.melt <- rbind(melt(as.data.frame(t(Vg4.Th1.y))), melt(as.data.frame(t(Vg4.Th1.o))))
@@ -93,10 +93,10 @@ write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analy
 
 ```{r}
 # Select gamma chain file for young V gamma 1 cells
-Vg4.Th17.y <- chain.prop(all.files, keywords = c("Vg4", "young", "TRG", "Th17"))
+Vg4.Th17.y <- chain.prop(all.files, keywords = c("Vg4", "young", "TRG", "Th17-"))
 
 # Select gamma chain file for old V gamma 1 cells
-Vg4.Th17.o <- chain.prop(all.files, keywords = c("Vg4", "old", "TRG", "Th17"))
+Vg4.Th17.o <- chain.prop(all.files, keywords = c("Vg4", "old", "TRG", "Th17-"))
 
 # Plot results
 df.melt <- rbind(melt(as.data.frame(t(Vg4.Th17.y))), melt(as.data.frame(t(Vg4.Th17.o))))
