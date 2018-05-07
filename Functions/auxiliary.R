@@ -7,7 +7,7 @@ library(plyr)
 # Function to collect the total proportion of a chain across te whole population
 # of cells
 
-chain.prop <- function(files, keywords){
+chain.prop <- function(files, keywords, annotation = NULL){
   cur_files <- lapply(as.list(files), function(n){
     if(all(sapply(keywords, grepl, n))){
       read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
@@ -28,6 +28,16 @@ chain.prop <- function(files, keywords){
   
   # Sum across clone faction
   sum.list <- lapply(cur_files, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+  
+  # Sum across similar annotations if annotation df is givern
+  if(!is.null(annotation)){
+    sum.list <- lapply(sum.list, function(n){
+        n$chain <- annotation[as.character(n$allVHitsWithScore),1]
+        n <- ddply(n, "chain", summarise, sum = sum(sum))
+        colnames(n) <- c("allVHitsWithScore", "sum")
+        n
+        })
+  }
   
   # Merge into one dataframe
   mat <- matrix(data = NA, ncol = length(cur_files), 
