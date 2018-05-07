@@ -1,5 +1,5 @@
 ---
-title: "Quanilty control based on clone detection"
+title: "Quality control based on clone detection"
 author: "Nils Eling"
 output: 
   html_document:

@@ -6,6 +6,8 @@ output:
   html_document:
     toc: true
     toc_depth: 2
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
+        encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/DeltaChainUsage.html') })
 ---
 
 ```{r setup, include=FALSE}
@@ -14,311 +16,186 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Read in data
 
-```{r}
+```{r data}
 library(plyr)
 library(reshape2)
 library(ggplot2)
-all.files <- list.files("Txt_files/", full.names = TRUE)
+library(cowplot)
+library(openxlsx)
+library(readxl)
+source("../../Functions/auxiliary.R")
 
-Vg1.y.d <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg1" , n) & grepl("young" , n) & grepl("TRD" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg1.y.d <- Vg1.y.d[!unlist(lapply(Vg1.y.d, is.null))]
+# Read in mixcr mapping results - one chain per .txt file
+all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
 
-Vg1.y.d <- lapply(Vg1.y.d, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
+# Read in normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
+libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
 
-# Sum across clone faction
-sum.list <- lapply(Vg1.y.d, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
+# Remove low quality libraries
+all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
 
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
+# Chain annotation
+annot <- as.data.frame(read_xls("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Variable_sequences_to_edit.xls"))
+annot$`IMGT sub-group`[is.na(annot$`IMGT sub-group`)] <- annot$names[is.na(annot$`IMGT sub-group`)]
+rownames(annot) <- annot$names
+```
 
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
+## V gamma 1 cells
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg1.y <- chain.prop(all.files, keywords = c("Vg1", "young", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg1.y <- Vg1.y[!apply(Vg1.y, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg1.o <- chain.prop(all.files, keywords = c("Vg1", "old", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg1.o <- Vg1.o[!apply(Vg1.o, 1, function(n){all(n < 0.01)}),]
 
 # Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
+df.melt <- rbind(melt(as.data.frame(t(Vg1.y))), melt(as.data.frame(t(Vg1.o))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg1.y)*ncol(Vg1.y)), 
+                 rep("Old", nrow(Vg1.o)*ncol(Vg1.o))), levels = c("Young", "Old"))
 
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
+Vg1.p <- ggplot(df.melt, aes(factor(variable,
+            levels = c("Vd1", "Vd2", "Vd3", "Vd4", "Vd5", "Vd6", "Vd7", 
+                       "Vd8", "Vd9", "Vd10", "Vd11", "Vd12")), 
+            value, fill = Age, group = Age)) + 
+  geom_point(shape = 21, size = 3, position=position_dodge(width = 0.5)) + 
   theme(axis.title = element_text(size = 12), 
         axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg1 young delta chain usage")
+  xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg1 gamma chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+Vg1.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg1.xlsx")
+```
+
+## V gamma 4 cells Th1 primed
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg4.y.Th1 <- chain.prop(all.files, keywords = c("Vg4", "young", "TRD", "Th1-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.y.Th1 <- Vg4.y.Th1[!apply(Vg4.y.Th1, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg4.o.Th1 <- chain.prop(all.files, keywords = c("Vg4", "old", "TRD", "Th1-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.o.Th1 <- Vg4.o.Th1[!apply(Vg4.o.Th1, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg4.y.Th1))), melt(as.data.frame(t(Vg4.o.Th1))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg4.y.Th1)*ncol(Vg4.y.Th1)), 
+                 rep("Old", nrow(Vg4.o.Th1)*ncol(Vg4.o.Th1))), levels = c("Young", "Old"))
+
+Vg4.Th1.p <- ggplot(df.melt, aes(factor(variable,
+            levels = c("Vd1", "Vd2", "Vd3", "Vd4", "Vd5", "Vd6", "Vd7", 
+                       "Vd8", "Vd9", "Vd10", "Vd11", "Vd12")), 
+            value, fill = Age, group = Age)) + 
+  geom_point(shape = 21, size = 3, position=position_dodge(width = 0.5)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg4 Th1 gamma chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+Vg4.Th1.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg4_Th17.xlsx")
+```
+
+## V gamma 4 cells Th17 primed
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg4.y.Th17 <- chain.prop(all.files, keywords = c("Vg4", "young", "TRD", "Th17-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.y.Th17 <- Vg4.y.Th17[!apply(Vg4.y.Th17, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg4.o.Th17 <- chain.prop(all.files, keywords = c("Vg4", "old", "TRD", "Th17-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.o.Th17 <- Vg4.o.Th17[!apply(Vg4.o.Th17, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg4.y.Th17))), melt(as.data.frame(t(Vg4.o.Th17))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg4.y.Th17)*ncol(Vg4.y.Th17)), 
+                 rep("Old", nrow(Vg4.o.Th17)*ncol(Vg4.o.Th17))), levels = c("Young", "Old"))
+
+Vg4.Th17.p <- ggplot(df.melt, aes(factor(variable,
+            levels = c("Vd1", "Vd2", "Vd3", "Vd4", "Vd5", "Vd6", "Vd7", 
+                       "Vd8", "Vd9", "Vd10", "Vd11", "Vd12")), 
+            value, fill = Age, group = Age)) + 
+  geom_point(shape = 21, size = 3, position=position_dodge(width = 0.5)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg4 Th17 gamma chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+Vg4.Th17.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg1.xlsx")
+```
+
+## V gamma 6 cells
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg6.y <- chain.prop(all.files, keywords = c("Vg6", "young", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg6.y <- Vg6.y[!apply(Vg6.y, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg6.o <- chain.prop(all.files, keywords = c("Vg6", "old", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg6.o <- Vg6.o[!apply(Vg6.o, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg6.y))), melt(as.data.frame(t(Vg6.o))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg6.y)*ncol(Vg6.y)), 
+                 rep("Old", nrow(Vg6.o)*ncol(Vg6.o))), levels = c("Young", "Old"))
+
+Vg6.p <- ggplot(df.melt, aes(factor(variable,
+            levels = c("Vd1", "Vd2", "Vd3", "Vd4", "Vd5", "Vd6", "Vd7", 
+                       "Vd8", "Vd9", "Vd10", "Vd11", "Vd12")), 
+            value, fill = Age, group = Age)) + 
+  geom_point(shape = 21, size = 3, position=position_dodge(width = 0.5)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction") + ggtitle("Vg6 gamma chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+Vg6.p
+
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg6.xlsx")
 ```
 
 ```{r}
-Vg1.o.d <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg1" , n) & grepl("old" , n) & grepl("TRD" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg1.o.d <- Vg1.o.d[!unlist(lapply(Vg1.o.d, is.null))]
-
-Vg1.o.d <- lapply(Vg1.o.d, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg1.o.d, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg1 old delta chain usage")
-```
-
-```{r}
-Vg4.y.d.Th1 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRD" , n) & grepl("Th1" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg4.y.d.Th1 <- Vg4.y.d.Th1[!unlist(lapply(Vg4.y.d.Th1, is.null))]
-
-Vg4.y.d.Th1 <- lapply(Vg4.y.d.Th1, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg4.y.d.Th1, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 young Th1 delta chain usage")
-```
-
-```{r}
-Vg4.o.d.Th1 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRD" , n) & grepl("Th1" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg4.o.d.Th1 <- Vg4.o.d.Th1[!unlist(lapply(Vg4.o.d.Th1, is.null))]
-
-Vg4.o.d.Th1 <- lapply(Vg4.o.d.Th1, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg4.o.d.Th1, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 old Th1 delta chain usage")
-```
-
-```{r}
-Vg4.y.d.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg4.y.d.Th17 <- Vg4.y.d.Th17[!unlist(lapply(Vg4.y.d.Th17, is.null))]
-
-Vg4.y.d.Th17 <- lapply(Vg4.y.d.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg4.y.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 young Th17 delta chain usage")
-```
-
-```{r}
-Vg4.o.d.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg4.o.d.Th17 <- Vg4.o.d.Th17[!unlist(lapply(Vg4.o.d.Th17, is.null))]
-
-Vg4.o.d.Th17 <- lapply(Vg4.o.d.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg4.o.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg4 old Th17 delta chain usage")
-```
-
-```{r}
-Vg6.y.d.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg6" , n) & grepl("young" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg6.y.d.Th17 <- Vg6.y.d.Th17[!unlist(lapply(Vg6.y.d.Th17, is.null))]
-
-Vg6.y.d.Th17 <- lapply(Vg6.y.d.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg6.y.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg6 young Th17 delta chain usage")
-```
-
-```{r}
-Vg6.o.d.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg6" , n) & grepl("old" , n) & grepl("TRD" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-Vg6.o.d.Th17 <- Vg6.o.d.Th17[!unlist(lapply(Vg6.o.d.Th17, is.null))]
-
-Vg6.o.d.Th17 <- lapply(Vg6.o.d.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Sum across clone faction
-sum.list <- lapply(Vg6.o.d.Th17, function(n){ddply(n, "allVHitsWithScore", summarise, sum = sum(cloneFraction))})
-
-# Merge into one dataframe
-mat <- matrix(data = NA, ncol = length(Vg1.y.d), 
-              nrow = length(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore})))))
-rownames(mat) <- as.character(unique(unlist(sapply(sum.list, function(n){n$allVHitsWithScore}))))
-
-for(i in 1:ncol(mat)){
-  cur_n <- sum.list[[i]]
-  mat[as.character(cur_n$allVHitsWithScore),i] <- cur_n$sum
-}
-mat[is.na(mat)] <- 0
-
-# Plot results
-df.melt <- melt(as.data.frame(t(mat)))
-# df.final <- ddply(df.melt, "variable", summarise, mean = mean(value), error = sd(value))
-
-ggplot(df.melt, aes(variable, value)) + geom_point() + 
-  theme(axis.title = element_text(size = 12), 
-        axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  xlab("Delta chain") + ylab("Chain fraction") + ggtitle("Vg6 old Th17 delta chain usage")
+final <- plot_grid(Vg1.p, Vg4.Th1.p, Vg4.Th17.p, Vg6.p, 
+                   ncol = 2, nrow = 2, align = "hv")
+ggsave("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/DeltaChainUsage.pdf", 
+       final, width = 10, height = 10)
 ```
