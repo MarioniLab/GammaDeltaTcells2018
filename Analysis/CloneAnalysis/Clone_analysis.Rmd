@@ -114,7 +114,7 @@ Vg4.Th1.p <- ggplot(df.melt, aes(factor(variable,
   scale_fill_manual(values = c("white", "red"))
 Vg4.Th1.p
 
-write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg4_Th17.xlsx")
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg4_Th1.xlsx")
 ```
 
 ## V gamma 4 cells Th17 primed
@@ -152,7 +152,7 @@ Vg4.Th17.p <- ggplot(df.melt, aes(factor(variable,
   scale_fill_manual(values = c("white", "red"))
 Vg4.Th17.p
 
-write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg1.xlsx")
+write.xlsx(df.melt, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/TRD/Vg4_Th17.xlsx")
 ```
 
 ## V gamma 6 cells
