@@ -53,3 +53,79 @@ chain.prop <- function(files, keywords, annotation = NULL){
   
   mat
 }
+
+#### CDR3 analysis
+topCDR3 <- function(files, top, keywords, select = NULL){
+  cur_files <- lapply(as.list(files), function(n){
+    if(all(sapply(keywords, grepl, n))){
+      read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+    }
+  })
+  # Remove empty slots
+  library.names <- tail(sapply(files, function(n){unlist(strsplit(n, "\\/"))}), n=1)
+  library.names <- library.names[!unlist(lapply(cur_files, is.null))]
+  cur_files <- cur_files[!unlist(lapply(cur_files, is.null))]
+  
+  # Collect clone fractions
+  cur_files <- lapply(cur_files, function(n){
+    n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
+    n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+    n
+  })
+  
+  # Exclude certain V chains if select != NULL
+  if(!is.null(select)){
+    cur_files <- lapply(cur_files, function(n){
+      n[n$allVHitsWithScore == select,]
+    })
+  }
+  
+  # Return the top expanded clones
+  cur_out <- unique(unlist(lapply(cur_files, function(n){
+    if(length(n$clonalSequence) > 1){
+      n$clonalSequence[1:top]
+    }
+    else{
+      n$clonalSequence
+    }
+  })))
+  
+  cur_out[!is.na(cur_out)]
+  
+}
+
+# Function to collect the clones fraction for given clones
+clones.fraction <- function(files, name, clones){
+  keywords <- unlist(strsplit(name, "_"))[1:4]
+  select <- unlist(strsplit(name, "_"))[5]
+  replicate <- unlist(strsplit(name, "_"))[6]
+  
+  cur_files <- lapply(as.list(files), function(n){
+    if(all(sapply(keywords, grepl, n))){
+      read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+    }
+  })
+  # Remove empty slots
+  library.names <- tail(sapply(files, function(n){unlist(strsplit(n, "\\/"))}), n=1)
+  library.names <- library.names[!unlist(lapply(cur_files, is.null))]
+  cur_files <- cur_files[!unlist(lapply(cur_files, is.null))]
+  
+  # Collect clone fractions
+  cur_files <- lapply(cur_files, function(n){
+    n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
+    n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
+    n
+  })
+  
+  # Exclude certain V chains if select != NULL
+  cur_files <- lapply(cur_files, function(n){
+      n[grepl(select, n$allVHitsWithScore),]
+  })
+  
+  cur_rep <- cur_files[[as.numeric(replicate)]]
+  
+  out_vector <- rep(0, length(clones))
+  out_vector[clones %in% cur_rep$clonalSequence] <- cur_rep$cloneFraction[cur_rep$clonalSequence %in% clones[clones %in% cur_rep$clonalSequence]]
+  out_vector
+}
+

@@ -22,6 +22,8 @@ library(plyr)
 library(reshape2)
 library(ggplot2)
 library(cowplot)
+library(pheatmap)
+source("../../Functions/auxiliary.R")
 
 # Read in mixcr mapping results - one chain per .txt file
 all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
@@ -34,297 +36,79 @@ libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
 all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
 ```
 
-# Compare clones Th17 old vs Th1 young and Th17 old vs Th17 young
+# TRG
 
-## Nucleotide sequence
+## Collect top 20 expanded clones for each old library
 
-### Th17 old vs Th1 young
+```{r expansion}
+# Find clones
+Vg1_old_TRG_V1 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V1")
+Vg1_old_TRG_V3 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V3")
+Vg4_Th1_old_TRG_V4 <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRG", "Th1-"), select = "TCRG-V4")
+Vg4_Th17_old_TRG_V4 <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRG", "Th17-"), select = "TCRG-V4")
+Vg6_old_TRG_V6 <- topCDR3(all.files, top = 10, keywords = c("Vg6", "old", "TRG"), select = "TCRG-V6")
 
-```{r}
-# Select gamma chain file for young V gamma 4 cells Th1 primed
-Vg4.y.Th1 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRG" , n) & !grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-# Remove empty slots
-Vg4.y.Th1 <- Vg4.y.Th1[!unlist(lapply(Vg4.y.Th1, is.null))]
+# Merge all clones
+all.clones <- unique(c(Vg1_old_TRG_V1, Vg1_old_TRG_V3,
+                Vg4_Th1_old_TRG_V4, Vg4_Th17_old_TRG_V4, 
+                Vg6_old_TRG_V6))
+```
 
-# Collect the clone fractions for variable clones
-Vg4.y.Th1 <- lapply(Vg4.y.Th1, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
+## Create a data frame that contains the proportion of each clone in each libary
 
-# Remove everything that's not Vg4
-Vg4.y.Th1 <- lapply(Vg4.y.Th1, function(n){
-  n[n$allVHitsWithScore == "TCRG-V4",]
-})
+```{r collection}
+TRG.files <- all.files[grepl("TRG", all.files)]
+# Generate data info
+c.names <- c(paste("Vg1_Th1-_old_TRG_V1", 
+                   1:sum(grepl("Vg1_Th1-old", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg1_Th1-_old_TRG_V3", 
+                   1:sum(grepl("Vg1_Th1-old", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th1-_old_TRG_V4", 
+                   1:sum(grepl("Vg4_Th1-old", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th17-_old_TRG_V4", 
+                   1:sum(grepl("Vg4_Th17-old", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg6_Th17-_old_TRG_V6", 
+                   1:sum(grepl("Vg6_Th17-old", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg1_Th1-_young_TRG_V1", 
+                   1:sum(grepl("Vg1_Th1-young", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg1_Th1-_young_TRG_V3", 
+                   1:sum(grepl("Vg1_Th1-young", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th1-_young_TRG_V4", 
+                   1:sum(grepl("Vg4_Th1-young", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th17-_young_TRG_V4", 
+                   1:sum(grepl("Vg4_Th17-young", TRG.files)), 
+                   sep =  "_"),
+             paste("Vg6_Th17-_young_TRG_V6", 
+                   1:sum(grepl("Vg6_Th17-young", TRG.files)), 
+                   sep =  "_"))
 
-# Select gamma chain file for old V gamma 4 cells Th17 primed
-Vg4.o.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRG" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-# Remove empty slots
-Vg4.o.Th17 <- Vg4.o.Th17[!unlist(lapply(Vg4.o.Th17, is.null))]
+mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = length(all.clones))
+colnames(mat) <- c.names
+rownames(mat) <- all.clones
 
-# Collect the clone fractions for variable clones
-Vg4.o.Th17 <- lapply(Vg4.o.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Remove everything that's not Vg4
-Vg4.o.Th17 <- lapply(Vg4.o.Th17, function(n){
-  n[n$allVHitsWithScore == "TCRG-V4",]
-})
-
-# Combine information into one data frame
-cur_list <- list()
-for(i in 1:5){
-  cur_matrix <- matrix(data = 0, ncol = 2, nrow = length(unique(c(Vg4.y.Th1[[i]]$clonalSequence,
-                                                                Vg4.o.Th17[[i]]$clonalSequence))))
-  colnames(cur_matrix) <- c("Th17 old", "Th1 young")
-  rownames(cur_matrix) <- unique(c(Vg4.y.Th1[[i]]$clonalSequence, Vg4.o.Th17[[i]]$clonalSequence))
-  cur_matrix[Vg4.o.Th17[[i]]$clonalSequence,1] <- Vg4.o.Th17[[i]]$cloneFraction
-  cur_matrix[Vg4.y.Th1[[i]]$clonalSequence,2] <- Vg4.y.Th1[[i]]$cloneFraction
-  cur_list[[i]] <- cur_matrix
+for(i in c.names){
+  mat[,i] <- clones.fraction(all.files, i, all.clones)
 }
-
-df <- data.frame(clones = c(rownames(cur_list[[1]]), rownames(cur_list[[2]]),
-                            rownames(cur_list[[3]]), rownames(cur_list[[4]]),
-                            rownames(cur_list[[5]])),
-                 Th17old = c(cur_list[[1]][,1], cur_list[[2]][,1],
-                         cur_list[[3]][,1], cur_list[[4]][,1],
-                         cur_list[[5]][,1]),
-                 Th1young = c(cur_list[[1]][,2], cur_list[[2]][,2],
-                         cur_list[[3]][,2], cur_list[[4]][,2],
-                         cur_list[[5]][,2]),
-                 Replicate = factor(c(rep(1, nrow(cur_list[[1]])), rep(2, nrow(cur_list[[2]])),
-                               rep(3, nrow(cur_list[[3]])), rep(4, nrow(cur_list[[4]])),
-                               rep(5, nrow(cur_list[[5]])))))
-
-# Remove clones that are not shared
-df.red <- df[df$Th17old != 0 & df$Th1young != 0,]
-df.red.melt <- melt(df.red)
-Th17old.vs.Th1young.nt <- ggplot(df.red.melt) + 
-  geom_point(aes(clones, value, colour = variable, shape = Replicate), size = 2) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
-  scale_color_manual(values = c("steelblue", "coral")) + ggtitle("CDR3 nucleotide sequence")
-Th17old.vs.Th1young.nt
 ```
 
-### Th17 old vs Th17 young
+## Visualization
 
-```{r}
-# Select gamma chain file for young V gamma 4 cells Th1 primed
-Vg4.y.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRG" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-# Remove empty slots
-Vg4.y.Th17 <- Vg4.y.Th17[!unlist(lapply(Vg4.y.Th17, is.null))]
+```{r, fig.width=15, fig.height=20}
+# With Vg6
+pheatmap(mat, color = colorRampPalette(c("white", "blue", "red"))(100))
 
-# Collect the clone fractions for variable clones
-Vg4.y.Th17 <- lapply(Vg4.y.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Remove everything that's not Vg4
-Vg4.y.Th17 <- lapply(Vg4.y.Th17, function(n){
-  n[n$allVHitsWithScore == "TCRG-V4",]
-})
-
-# Combine information into one data frame
-cur_list <- list()
-for(i in 1:5){
-  cur_matrix <- matrix(data = 0, ncol = 2, nrow = length(unique(c(Vg4.y.Th17[[i]]$clonalSequence,
-                                                                Vg4.o.Th17[[i]]$clonalSequence))))
-  colnames(cur_matrix) <- c("Th17 old", "Th17 young")
-  rownames(cur_matrix) <- unique(c(Vg4.y.Th17[[i]]$clonalSequence, Vg4.o.Th17[[i]]$clonalSequence))
-  cur_matrix[Vg4.o.Th17[[i]]$clonalSequence,1] <- Vg4.o.Th17[[i]]$cloneFraction
-  cur_matrix[Vg4.y.Th17[[i]]$clonalSequence,2] <- Vg4.y.Th17[[i]]$cloneFraction
-  cur_list[[i]] <- cur_matrix
-}
-
-df <- data.frame(clones = c(rownames(cur_list[[1]]), rownames(cur_list[[2]]),
-                            rownames(cur_list[[3]]), rownames(cur_list[[4]]),
-                            rownames(cur_list[[5]])),
-                 Th17old = c(cur_list[[1]][,1], cur_list[[2]][,1],
-                         cur_list[[3]][,1], cur_list[[4]][,1],
-                         cur_list[[5]][,1]),
-                 Th17young = c(cur_list[[1]][,2], cur_list[[2]][,2],
-                         cur_list[[3]][,2], cur_list[[4]][,2],
-                         cur_list[[5]][,2]),
-                 Replicate = factor(c(rep(1, nrow(cur_list[[1]])), rep(2, nrow(cur_list[[2]])),
-                               rep(3, nrow(cur_list[[3]])), rep(4, nrow(cur_list[[4]])),
-                               rep(5, nrow(cur_list[[5]])))))
-
-# Remove clones that are not shared
-df.red <- df[df$Th17old != 0 & df$Th17young != 0,]
-df.red.melt <- melt(df.red)
-Th17old.vs.Th17young.nt <- ggplot(df.red.melt) + 
-  geom_point(aes(clones, value, colour = variable, shape = Replicate), size = 2) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
-  scale_color_manual(values = c("steelblue", "violet")) + ggtitle("CDR3 nucleotide sequence")
-Th17old.vs.Th17young.nt
+# Without Vg6
+cur_mat <- mat[,!grepl("Vg6", colnames(mat))]
+pheatmap(cur_mat, color = colorRampPalette(c("white", "blue", "red"))(100),
+         cellwidth = 10, cellheight = 10, fontsize = 9)
 ```
 
-## AA sequence
-
-### Th17 old vs Th1 young
-
-```{r}
-# Select gamma chain file for young V gamma 4 cells Th1 primed
-Vg4.y.Th1 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRG" , n) & !grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-# Remove empty slots
-Vg4.y.Th1 <- Vg4.y.Th1[!unlist(lapply(Vg4.y.Th1, is.null))]
-
-# Collect the clone fractions for variable clones
-Vg4.y.Th1 <- lapply(Vg4.y.Th1, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "aaSeqCDR3")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Remove everything that's not Vg4
-Vg4.y.Th1 <- lapply(Vg4.y.Th1, function(n){
-  n[n$allVHitsWithScore == "TCRG-V4",]
-})
-
-# Select gamma chain file for old V gamma 4 cells Th17 primed
-Vg4.o.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("old" , n) & grepl("TRG" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-# Remove empty slots
-Vg4.o.Th17 <- Vg4.o.Th17[!unlist(lapply(Vg4.o.Th17, is.null))]
-
-# Collect the clone fractions for variable clones
-Vg4.o.Th17 <- lapply(Vg4.o.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "aaSeqCDR3")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Remove everything that's not Vg4
-Vg4.o.Th17 <- lapply(Vg4.o.Th17, function(n){
-  n[n$allVHitsWithScore == "TCRG-V4",]
-})
-
-# Combine information into one data frame
-cur_list <- list()
-for(i in 1:5){
-  cur_matrix <- matrix(data = 0, ncol = 2, nrow = length(unique(c(Vg4.y.Th1[[i]]$aaSeqCDR3,
-                                                                Vg4.o.Th17[[i]]$aaSeqCDR3))))
-  colnames(cur_matrix) <- c("Th17 old", "Th1 young")
-  rownames(cur_matrix) <- unique(c(Vg4.y.Th1[[i]]$aaSeqCDR3, Vg4.o.Th17[[i]]$aaSeqCDR3))
-  cur_matrix[Vg4.o.Th17[[i]]$aaSeqCDR3,1] <- Vg4.o.Th17[[i]]$cloneFraction
-  cur_matrix[Vg4.y.Th1[[i]]$aaSeqCDR3,2] <- Vg4.y.Th1[[i]]$cloneFraction
-  cur_list[[i]] <- cur_matrix
-}
-
-df <- data.frame(clones = c(rownames(cur_list[[1]]), rownames(cur_list[[2]]),
-                            rownames(cur_list[[3]]), rownames(cur_list[[4]]),
-                            rownames(cur_list[[5]])),
-                 Th17old = c(cur_list[[1]][,1], cur_list[[2]][,1],
-                         cur_list[[3]][,1], cur_list[[4]][,1],
-                         cur_list[[5]][,1]),
-                 Th1young = c(cur_list[[1]][,2], cur_list[[2]][,2],
-                         cur_list[[3]][,2], cur_list[[4]][,2],
-                         cur_list[[5]][,2]),
-                 Replicate = factor(c(rep(1, nrow(cur_list[[1]])), rep(2, nrow(cur_list[[2]])),
-                               rep(3, nrow(cur_list[[3]])), rep(4, nrow(cur_list[[4]])),
-                               rep(5, nrow(cur_list[[5]])))))
-
-# Remove clones that are not shared
-df.red <- df[df$Th17old != 0 & df$Th1young != 0,]
-df.red.melt <- melt(df.red)
-Th17old.vs.Th1young.aa <- ggplot(df.red.melt) + 
-  geom_point(aes(clones, value, colour = variable, shape = Replicate), size = 2) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
-  scale_color_manual(values = c("steelblue", "coral")) + ggtitle("CDR3 amino acid sequence")
-Th17old.vs.Th1young.aa
-```
-
-### Th17 old vs Th17 young
-
-```{r}
-# Select gamma chain file for young V gamma 4 cells Th1 primed
-Vg4.y.Th17 <- lapply(as.list(all.files), function(n){
-  if(grepl("Vg4" , n) & grepl("young" , n) & grepl("TRG" , n) & grepl("Th17" , n)){
-    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
-  }
-})
-# Remove empty slots
-Vg4.y.Th17 <- Vg4.y.Th17[!unlist(lapply(Vg4.y.Th17, is.null))]
-
-# Collect the clone fractions for variable clones
-Vg4.y.Th17 <- lapply(Vg4.y.Th17, function(n){
-  n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "aaSeqCDR3")])
-  n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
-  n
-})
-
-# Remove everything that's not Vg4
-Vg4.y.Th17 <- lapply(Vg4.y.Th17, function(n){
-  n[n$allVHitsWithScore == "TCRG-V4",]
-})
-
-# Combine information into one data frame
-cur_list <- list()
-for(i in 1:5){
-  cur_matrix <- matrix(data = 0, ncol = 2, nrow = length(unique(c(Vg4.y.Th17[[i]]$aaSeqCDR3,
-                                                                Vg4.o.Th17[[i]]$aaSeqCDR3))))
-  colnames(cur_matrix) <- c("Th17 old", "Th17 young")
-  rownames(cur_matrix) <- unique(c(Vg4.y.Th17[[i]]$aaSeqCDR3, Vg4.o.Th17[[i]]$aaSeqCDR3))
-  cur_matrix[Vg4.o.Th17[[i]]$aaSeqCDR3,1] <- Vg4.o.Th17[[i]]$cloneFraction
-  cur_matrix[Vg4.y.Th17[[i]]$aaSeqCDR3,2] <- Vg4.y.Th17[[i]]$cloneFraction
-  cur_list[[i]] <- cur_matrix
-}
-
-df <- data.frame(clones = c(rownames(cur_list[[1]]), rownames(cur_list[[2]]),
-                            rownames(cur_list[[3]]), rownames(cur_list[[4]]),
-                            rownames(cur_list[[5]])),
-                 Th17old = c(cur_list[[1]][,1], cur_list[[2]][,1],
-                         cur_list[[3]][,1], cur_list[[4]][,1],
-                         cur_list[[5]][,1]),
-                 Th17young = c(cur_list[[1]][,2], cur_list[[2]][,2],
-                         cur_list[[3]][,2], cur_list[[4]][,2],
-                         cur_list[[5]][,2]),
-                 Replicate = factor(c(rep(1, nrow(cur_list[[1]])), rep(2, nrow(cur_list[[2]])),
-                               rep(3, nrow(cur_list[[3]])), rep(4, nrow(cur_list[[4]])),
-                               rep(5, nrow(cur_list[[5]])))))
-
-# Remove clones that are not shared
-df.red <- df[df$Th17old != 0 & df$Th17young != 0,]
-df.red.melt <- melt(df.red)
-Th17old.vs.Th17young.aa <- ggplot(df.red.melt) + 
-  geom_point(aes(clones, value, colour = variable, shape = Replicate), size = 2) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
-  scale_color_manual(values = c("steelblue", "violet")) + ggtitle("CDR3 amino acid sequence")
-Th17old.vs.Th17young.aa
-```
-
-Save figure
-
-```{r}
-final <- plot_grid(Th17old.vs.Th1young.nt, Th17old.vs.Th17young.nt,
-                   Th17old.vs.Th1young.aa, Th17old.vs.Th17young.aa,
-                   ncol = 1, nrow = 4)
-
-ggsave("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/CDR3_comparison.pdf", 
-       final, width = 10, height = 25)
-```
