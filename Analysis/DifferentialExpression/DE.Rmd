@@ -22,6 +22,9 @@ library(openxlsx)
 library(goseq)
 library(GO.db)
 library(org.Mm.eg.db)
+library(VennDiagram)
+library(pheatmap)
+library(viridis)
 ```
 
 ```{r, data}
@@ -56,6 +59,8 @@ list.comp <- list(#"Vg1_Th1_young vs Vg4_Th1_young" = c("Vg1_Th1_young", "Vg4_Th
 ```
 
 # Differential expression analysis
+
+The differential expression analysis is performed between the groups listed above.
 
 ```{r}
 for(i in 1:length(list.comp)){
@@ -144,4 +149,110 @@ for(i in 1:length(list.comp)){
   write.xlsx(cur_list, paste("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/", names(list.comp)[i], ".xlsx", sep = ""))
   write.xlsx(cur_list.go, paste("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/", names(list.comp)[i], "_GO.xlsx", sep = ""))
 }
+```
+
+# Comparison between Th1 and Th17
+
+```{r Th1_vs_Th17}
+# Read in relevant data
+Th1young <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/Vg4_Th1_young vs Vg4_Th17_young.xlsx", sheet = 1)
+Th17young <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/Vg4_Th1_young vs Vg4_Th17_young.xlsx", sheet = 2)
+
+Th1old <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/Vg4_Th1_old vs Vg4_Th17_old.xlsx", sheet = 1)
+Th17old <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes/Vg4_Th1_old vs Vg4_Th17_old.xlsx", sheet = 2)
+
+# Find the overlab between these lists
+shared.Th1 <- intersect(Th1young$GeneID,
+                        Th1old$GeneID)
+
+shared.Th17 <- intersect(Th17young$GeneID,
+                        Th17old$GeneID)
+
+# VennDiagram for Th1
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/VennDiagram_Th1.pdf",
+    onefile = FALSE)
+draw.pairwise.venn(area1 = length(Th1young$GeneID), 
+                   area2 = length(Th1old$GeneID), 
+                   cross.area = length(shared.Th1), 
+                   category = c("Up in Th1 young", 
+                                "Up in Th1 old"), 
+                   euler.d = TRUE, scaled = TRUE,
+                   fill = c("steelblue4", "coral3"))
+dev.off()
+
+# VennDiagram for Th17
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/VennDiagram_Th17.pdf",
+    onefile = FALSE)
+draw.pairwise.venn(area1 = length(Th17young$GeneID), 
+                   area2 = length(Th17old$GeneID), 
+                   cross.area = length(shared.Th17), 
+                   category = c("Up in Th17 young", 
+                                "Up in Th17 old"), 
+                   euler.d = TRUE, scaled = TRUE,
+                   fill = c("steelblue4", "coral3"))
+dev.off()
+```
+
+Visualization of heatmaps.
+
+```{r heatmap}
+# Heatmaps - Th1 young
+cur_heatmap <- data.all[Th1young$GeneID[1:100],
+                        c(which(grepl("Vg4_Th1_young", colnames(data.all))),
+                      which(grepl("Vg4_Th17_young", colnames(data.all))))]
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/Heatmap_Th1young.pdf",
+    onefile = FALSE, height = 15, width = 8)
+pheatmap(log10(cur_heatmap + 1),
+         cluster_rows = FALSE, cluster_cols = FALSE, color = viridis(100),
+         labels_row = Th1young$Genename[1:100], border_color = NA, 
+         show_colnames = FALSE, cellheight = 8, cellwidth = 8, fontsize = 7,
+         annotation_col = data.frame(row.names = colnames(cur_heatmap),
+                          group = sub("_DO.*$", "", colnames(cur_heatmap))))
+dev.off()
+
+# Heatmaps - Th17 young
+cur_heatmap <- data.all[Th17young$GeneID[1:100],
+                        c(which(grepl("Vg4_Th1_young", colnames(data.all))),
+                      which(grepl("Vg4_Th17_young", colnames(data.all))))]
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/Heatmap_Th17young.pdf",
+    onefile = FALSE, height = 15, width = 8)
+pheatmap(log10(cur_heatmap + 1),
+         cluster_rows = FALSE, cluster_cols = FALSE, color = viridis(100),
+         labels_row = Th17young$Genename[1:100], border_color = NA, 
+         show_colnames = FALSE, cellheight = 8, cellwidth = 8, fontsize = 7,
+         annotation_col = data.frame(row.names = colnames(cur_heatmap),
+                          group = sub("_DO.*$", "", colnames(cur_heatmap))))
+dev.off()
+
+# Heatmaps - Th1 old
+cur_heatmap <- data.all[Th1old$GeneID[1:100],
+                        c(which(grepl("Vg4_Th1_old", colnames(data.all))),
+                      which(grepl("Vg4_Th17_old", colnames(data.all))))]
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/Heatmap_Th1old.pdf",
+    onefile = FALSE, height = 15, width = 8)
+pheatmap(log10(cur_heatmap + 1),
+         cluster_rows = FALSE, cluster_cols = FALSE, color = viridis(100),
+         labels_row = Th1old$Genename[1:100], border_color = NA, 
+         show_colnames = FALSE, cellheight = 8, cellwidth = 8, fontsize = 7,
+         annotation_col = data.frame(row.names = colnames(cur_heatmap),
+                          group = sub("_DO.*$", "", colnames(cur_heatmap))))
+dev.off()
+
+# Heatmaps - Th17 old
+cur_heatmap <- data.all[Th17old$GeneID[1:100],
+                        c(which(grepl("Vg4_Th1_old", colnames(data.all))),
+                      which(grepl("Vg4_Th17_old", colnames(data.all))))]
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/Heatmap_Th17old.pdf",
+    onefile = FALSE, height = 15, width = 8)
+pheatmap(log10(cur_heatmap + 1),
+         cluster_rows = FALSE, cluster_cols = FALSE, color = viridis(100),
+         labels_row = Th17old$Genename[1:100], border_color = NA, 
+         show_colnames = FALSE, cellheight = 8, cellwidth = 8, fontsize = 7,
+         annotation_col = data.frame(row.names = colnames(cur_heatmap),
+                          group = sub("_DO.*$", "", colnames(cur_heatmap))))
+dev.off()
 ```
