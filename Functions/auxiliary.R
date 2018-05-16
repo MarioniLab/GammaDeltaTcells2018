@@ -68,7 +68,7 @@ topCDR3 <- function(files, top, keywords, select = NULL){
   
   # Collect clone fractions
   cur_files <- lapply(cur_files, function(n){
-    n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence")])
+    n <- data.frame(n[,c("cloneFraction", "allVHitsWithScore", "clonalSequence", "aaSeqCDR3")])
     n$allVHitsWithScore <- as.factor(as.character(sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})))
     n
   })
@@ -81,17 +81,28 @@ topCDR3 <- function(files, top, keywords, select = NULL){
   }
   
   # Return the top expanded clones
-  cur_out <- unique(unlist(lapply(cur_files, function(n){
+  # Collect 
+  cur_out.na <- unlist(lapply(cur_files, function(n){
     if(length(n$clonalSequence) > 1){
       n$clonalSequence[1:top]
     }
     else{
       n$clonalSequence
     }
-  })))
+  }))
+  cur_out.na.unique <- unique(cur_out.na)
   
-  cur_out[!is.na(cur_out)]
-  
+  cur_out.aa <- unlist(lapply(cur_files, function(n){
+    if(length(n$clonalSequence) > 1){
+      n$aaSeqCDR3[1:top]
+    }
+    else{
+      n$clonalSequence
+    }
+  }))
+  data.frame(na = cur_out.na.unique[!is.na(cur_out.na.unique)],
+                   aa = cur_out.aa[match(cur_out.na.unique[!is.na(cur_out.na.unique)],
+                                         cur_out.na)], stringsAsFactors = FALSE)
 }
 
 # Function to collect the clones fraction for given clones
@@ -117,10 +128,12 @@ clones.fraction <- function(files, name, clones){
     n
   })
   
-  # Exclude certain V chains if select != NULL
-  cur_files <- lapply(cur_files, function(n){
-      n[grepl(select, n$allVHitsWithScore),]
-  })
+  # Exclude certain V chains if select != X
+  if(!(select == "X")){
+    cur_files <- lapply(cur_files, function(n){
+        n[grepl(select, n$allVHitsWithScore),]
+    })
+  }
   
   cur_rep <- cur_files[[as.numeric(replicate)]]
   

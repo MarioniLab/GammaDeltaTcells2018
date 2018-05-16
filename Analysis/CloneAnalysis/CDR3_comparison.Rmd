@@ -34,81 +34,323 @@ libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
 
 # Remove low quality libraries
 all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
+
+# All files containing TRG
+TRG.files <- all.files[grepl("TRG", all.files)]
+TRD.files <- all.files[grepl("TRD", all.files)]
 ```
 
 # TRG
 
-## Collect top 20 expanded clones for each old library
+## Collect top 10 expanded clones for each old library
 
 ```{r expansion}
-# Find clones
+# Find clones - old
 Vg1_old_TRG_V1 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V1")
-Vg1_old_TRG_V3 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V3")
+#Vg1_old_TRG_V3 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V3")
 Vg4_Th1_old_TRG_V4 <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRG", "Th1-"), select = "TCRG-V4")
 Vg4_Th17_old_TRG_V4 <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRG", "Th17-"), select = "TCRG-V4")
 Vg6_old_TRG_V6 <- topCDR3(all.files, top = 10, keywords = c("Vg6", "old", "TRG"), select = "TCRG-V6")
 
-# Merge all clones
-all.clones <- unique(c(Vg1_old_TRG_V1, Vg1_old_TRG_V3,
-                Vg4_Th1_old_TRG_V4, Vg4_Th17_old_TRG_V4, 
-                Vg6_old_TRG_V6))
+# Find clones - young
+Vg1_young_TRG_V1 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "young", "TRG"), select = "TCRG-V1")
+#Vg1_young_TRG_V3 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "young", "TRG"), select = "TCRG-V3")
+Vg4_Th1_young_TRG_V4 <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRG", "Th1-"), select = "TCRG-V4")
+Vg4_Th17_young_TRG_V4 <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRG", "Th17-"), select = "TCRG-V4")
+Vg6_young_TRG_V6 <- topCDR3(all.files, top = 10, keywords = c("Vg6", "young", "TRG"), select = "TCRG-V6")
 ```
 
-## Create a data frame that contains the proportion of each clone in each libary
+## Visuailze Vg1 cells
 
-```{r collection}
-TRG.files <- all.files[grepl("TRG", all.files)]
-# Generate data info
+```{r}
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na)),
+                         aa = c(Vg1_old_TRG_V1$aa, Vg1_young_TRG_V1$aa)[
+                           match(unique(c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na)),
+                                 c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na))
+                         ])
+rownames(cur_clones) <- cur_clones$na
+
 c.names <- c(paste("Vg1_Th1-_old_TRG_V1", 
                    1:sum(grepl("Vg1_Th1-old", TRG.files)), 
-                   sep =  "_"),
-             paste("Vg1_Th1-_old_TRG_V3", 
-                   1:sum(grepl("Vg1_Th1-old", TRG.files)), 
+                   sep =  "_"), 
+                   paste("Vg1_Th1-_young_TRG_V1", 
+                   1:sum(grepl("Vg1_Th1-young", TRG.files)), 
+                   sep =  "_"))
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
+
+for(i in c.names){
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
+}
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_TRG_CDR3.pdf", 
+    onefile = FALSE, width = 10, height = 10)
+pheatmap(cur_mat, 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(909)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
+         fontsize = 7)
+dev.off()
+```
+
+## Visuailze Vg4 cells
+
+```{r}
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg4_Th1_old_TRG_V4$na,
+                                       Vg4_Th1_young_TRG_V4$na,
+                                       Vg4_Th17_old_TRG_V4$na,
+                                       Vg4_Th17_young_TRG_V4$na)),
+                         aa = c(Vg4_Th1_old_TRG_V4$aa,
+                                Vg4_Th1_young_TRG_V4$aa,
+                                Vg4_Th17_old_TRG_V4$aa,
+                                Vg4_Th17_young_TRG_V4$aa)[
+                           match(unique(c(Vg4_Th1_old_TRG_V4$na,
+                                       Vg4_Th1_young_TRG_V4$na,
+                                       Vg4_Th17_old_TRG_V4$na,
+                                       Vg4_Th17_young_TRG_V4$na)),
+                                 c(Vg4_Th1_old_TRG_V4$na,
+                                       Vg4_Th1_young_TRG_V4$na,
+                                       Vg4_Th17_old_TRG_V4$na,
+                                       Vg4_Th17_young_TRG_V4$na))
+                         ])
+rownames(cur_clones) <- cur_clones$na
+
+c.names <- c(paste("Vg4_Th1-_young_TRG_V4", 
+                   1:sum(grepl("Vg4_Th1-young", TRG.files)), 
                    sep =  "_"),
              paste("Vg4_Th1-_old_TRG_V4", 
                    1:sum(grepl("Vg4_Th1-old", TRG.files)), 
-                   sep =  "_"),
-             paste("Vg4_Th17-_old_TRG_V4", 
-                   1:sum(grepl("Vg4_Th17-old", TRG.files)), 
-                   sep =  "_"),
-             paste("Vg6_Th17-_old_TRG_V6", 
-                   1:sum(grepl("Vg6_Th17-old", TRG.files)), 
-                   sep =  "_"),
-             paste("Vg1_Th1-_young_TRG_V1", 
-                   1:sum(grepl("Vg1_Th1-young", TRG.files)), 
-                   sep =  "_"),
-             paste("Vg1_Th1-_young_TRG_V3", 
-                   1:sum(grepl("Vg1_Th1-young", TRG.files)), 
-                   sep =  "_"),
-             paste("Vg4_Th1-_young_TRG_V4", 
-                   1:sum(grepl("Vg4_Th1-young", TRG.files)), 
-                   sep =  "_"),
+                   sep =  "_"), 
              paste("Vg4_Th17-_young_TRG_V4", 
                    1:sum(grepl("Vg4_Th17-young", TRG.files)), 
                    sep =  "_"),
-             paste("Vg6_Th17-_young_TRG_V6", 
-                   1:sum(grepl("Vg6_Th17-young", TRG.files)), 
+             paste("Vg4_Th17-_old_TRG_V4", 
+                   1:sum(grepl("Vg4_Th17-old", TRG.files)), 
                    sep =  "_"))
-
-mat <- matrix(data = NA, ncol = length(c.names), 
-              nrow = length(all.clones))
-colnames(mat) <- c.names
-rownames(mat) <- all.clones
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
 
 for(i in c.names){
-  mat[,i] <- clones.fraction(all.files, i, all.clones)
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
 }
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_TRG_CDR3.pdf", 
+    onefile = FALSE, width = 10, height = 10)
+pheatmap(cur_mat, 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
+         fontsize = 7)
+dev.off()
 ```
 
-## Visualization
+## Visuailze Vg6 cells
 
-```{r, fig.width=15, fig.height=20}
-# With Vg6
-pheatmap(mat, color = colorRampPalette(c("white", "blue", "red"))(100))
+```{r}
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na)),
+                         aa = c(Vg6_old_TRG_V6$aa, Vg6_young_TRG_V6$aa)[
+                           match(unique(c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na)),
+                                 c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na))
+                         ])
+rownames(cur_clones) <- cur_clones$na
 
-# Without Vg6
-cur_mat <- mat[,!grepl("Vg6", colnames(mat))]
-pheatmap(cur_mat, color = colorRampPalette(c("white", "blue", "red"))(100),
-         cellwidth = 10, cellheight = 10, fontsize = 9)
+c.names <- c(paste("Vg6_Th17-_young_TRG_V6", 
+                   1:sum(grepl("Vg6_Th17-young", TRG.files)), 
+                   sep =  "_"), 
+                   paste("Vg6_Th17-_old_TRG_V6", 
+                   1:sum(grepl("Vg6_Th17-old", TRG.files)), 
+                   sep =  "_"))
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
+
+for(i in c.names){
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
+}
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRG_CDR3.pdf", 
+    onefile = FALSE, width = 10, height = 5)
+pheatmap(cur_mat, 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
+         fontsize = 7)
+dev.off()
+```
+
+# TRD
+
+## Collect top 10 expanded clones for each old library
+
+```{r expansion}
+# Find clones - old
+Vg1_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRD"))
+Vg4_Th1_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRD", "Th1-"))
+Vg4_Th17_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRD", "Th17-"))
+Vg6_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg6", "old", "TRD"))
+
+# Find clones - young
+Vg1_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg1", "young", "TRD"))
+Vg4_Th1_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRD", "Th1-"))
+Vg4_Th17_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRD", "Th17-"))
+Vg6_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg6", "young", "TRD"))
+```
+
+## Visuailze Vg1 cells
+
+```{r}
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg1_old_TRD$na, Vg1_young_TRD$na)),
+                         aa = c(Vg1_old_TRD$aa, Vg1_young_TRD$aa)[
+                           match(unique(c(Vg1_old_TRD$na, Vg1_young_TRD$na)),
+                                 c(Vg1_old_TRD$na, Vg1_young_TRD$na))
+                         ], stringsAsFactors = FALSE)
+rownames(cur_clones) <- cur_clones$na
+
+c.names <- c(paste("Vg1_Th1-_old_TRD_X", 
+                   1:sum(grepl("Vg1_Th1-old", TRD.files)), 
+                   sep =  "_"), 
+                   paste("Vg1_Th1-_young_TRD_X", 
+                   1:sum(grepl("Vg1_Th1-young", TRD.files)), 
+                   sep =  "_"))
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
+
+for(i in c.names){
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
+}
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_TRD_CDR3.pdf", 
+    onefile = FALSE, width = 10, height = 15)
+pheatmap(cur_mat, 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
+         fontsize = 7)
+dev.off()
+```
+
+## Visuailze Vg4 cells
+
+```{r}
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg4_Th1_old_TRD$na,
+                                       Vg4_Th1_young_TRD$na,
+                                       Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na)),
+                         aa = c(Vg4_Th1_old_TRD$aa,
+                                Vg4_Th1_young_TRD$aa,
+                                Vg4_Th17_old_TRD$aa,
+                                Vg4_Th17_young_TRD$aa)[
+                           match(unique(c(Vg4_Th1_old_TRD$na,
+                                       Vg4_Th1_young_TRD$na,
+                                       Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na)),
+                                 c(Vg4_Th1_old_TRD$na,
+                                       Vg4_Th1_young_TRD$na,
+                                       Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na))
+                         ])
+rownames(cur_clones) <- cur_clones$na
+
+c.names <- c(paste("Vg4_Th1-_young_TRD_X", 
+                   1:sum(grepl("Vg4_Th1-young", TRD.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th1-_old_TRD_X", 
+                   1:sum(grepl("Vg4_Th1-old", TRD.files)), 
+                   sep =  "_"), 
+             paste("Vg4_Th17-_young_TRD_X", 
+                   1:sum(grepl("Vg4_Th17-young", TRD.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th17-_old_TRD_X", 
+                   1:sum(grepl("Vg4_Th17-old", TRD.files)), 
+                   sep =  "_"))
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
+
+for(i in c.names){
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
+}
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_TRD_CDR3.pdf", 
+    onefile = FALSE, width = 10, height = 20)
+pheatmap(cur_mat, 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
+         fontsize = 7)
+dev.off()
+```
+
+## Visuailze Vg6 cells
+
+```{r}
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg6_old_TRD$na, Vg6_young_TRD$na)),
+                         aa = c(Vg6_old_TRD$aa, Vg6_young_TRD$aa)[
+                           match(unique(c(Vg6_old_TRD$na, Vg6_young_TRD$na)),
+                                 c(Vg6_old_TRD$na, Vg6_young_TRD$na))
+                         ])
+rownames(cur_clones) <- cur_clones$na
+
+c.names <- c(paste("Vg6_Th17-_young_TRD_X", 
+                   1:sum(grepl("Vg6_Th17-young", TRG.files)), 
+                   sep =  "_"), 
+                   paste("Vg6_Th17-_old_TRD_X", 
+                   1:sum(grepl("Vg6_Th17-old", TRG.files)), 
+                   sep =  "_"))
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
+
+for(i in c.names){
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
+}
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRD_CDR3.pdf", 
+    onefile = FALSE, width = 10, height = 15)
+pheatmap(cur_mat, 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
+         fontsize = 7)
+dev.off()
 ```
 
