@@ -1,0 +1,233 @@
+---
+title: "Shared clone analysis"
+author: "Nils Eling"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
+        encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Shared_clones.html') })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(cowplot)
+library(pheatmap)
+source("../../Functions/auxiliary.R")
+
+# Read in mixcr mapping results - one chain per .txt file
+all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
+
+# Read in normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
+libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
+
+# Remove low quality libraries
+all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
+
+# All files containing TRG
+TRG.files <- all.files[grepl("TRG", all.files)]
+TRD.files <- all.files[grepl("TRD", all.files)]
+```
+
+# TRG analysis
+
+## Vg1 cells
+
+```{r}
+cur_files <- TRG.files[grepl("Vg1_Th1", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg1_Th1", TRG.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg1 <- shared_clones(cur_files, cur_names)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+```
+
+## Vg4 cells
+
+```{r}
+cur_files <- TRG.files[grepl("Vg4", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg4", TRG.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4 <- shared_clones(cur_files, cur_names)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+```
+
+## Vg6 cells
+
+```{r}
+cur_files <- TRG.files[grepl("Vg6_Th17", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg6_Th17", TRG.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg6 <- shared_clones(cur_files, cur_names)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+```
+
+# TRD analysis
+
+## Vg1 cells
+
+```{r}
+cur_files <- TRD.files[grepl("Vg1_Th1", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg1_Th1", TRD.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg1 <- shared_clones(cur_files, cur_names)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRD_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRD_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+```
+
+## Vg4 cells
+
+```{r}
+cur_files <- TRD.files[grepl("Vg4", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg4", TRD.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4 <- shared_clones(cur_files, cur_names)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRD_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRD_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+```
+
+## Vg6 cells
+
+```{r}
+cur_files <- TRD.files[grepl("Vg6_Th17", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg6_Th17", TRD.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg6 <- shared_clones(cur_files, cur_names)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRD_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRD_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+```
