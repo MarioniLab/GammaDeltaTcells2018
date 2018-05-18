@@ -89,14 +89,29 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Find old specific clones
+cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
+cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
+
+# Find young specific clones
+cur_mat.young <- cur_mat[rowSums(cur_mat[,grepl("old", colnames(cur_mat))]) < 0.0001,]
+cur_mat.young <- cur_mat.young[order(rowMeans(cur_mat.young), decreasing = TRUE),]
+
+# Find shared clones
+cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in% 
+                               c(rownames(cur_mat.old),
+                                 rownames(cur_mat.young))),]
+cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared), 
+                                       decreasing = TRUE),]
+
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_TRG_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 10)
-pheatmap(cur_mat, 
-         color = c("grey", colorRampPalette(c("white", "blue", "red"))(909)),
+pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
-         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
-         fontsize = 7)
+         breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
 dev.off()
 ```
 
@@ -147,14 +162,91 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Find Th1 young specific clones
+cur_mat.young.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_old", 
+                              colnames(cur_mat))]) < 0.0001 &
+                               rowSums(cur_mat[,grepl("Th17-_young", 
+                              colnames(cur_mat))]) < 0.0001 &
+                               rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.young.Th1 <- cur_mat.young.Th1[order(rowMeans(cur_mat.young.Th1),
+                                             decreasing = TRUE),]
+
+# Find Th1 old specific clones
+cur_mat.old.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_young", 
+                                    colnames(cur_mat))]) < 0.0001 &
+                             rowSums(cur_mat[,grepl("Th17-_old", 
+                                    colnames(cur_mat))]) < 0.0001 &
+                             rowSums(cur_mat[,grepl("Th17-_young", 
+                                    colnames(cur_mat))]) < 0.0001,]
+cur_mat.old.Th1 <- cur_mat.old.Th1[order(rowMeans(cur_mat.old.Th1), 
+                                         decreasing = TRUE),]
+
+# Find Th17 young specific clones
+cur_mat.young.Th17 <- cur_mat[rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) < 0.0001 &
+                                rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) < 0.0001 & 
+                                rowSums(cur_mat[,grepl("Th1-_old", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.young.Th17 <- cur_mat.young.Th17[order(rowMeans(cur_mat.young.Th17),
+                                             decreasing = TRUE),]
+
+# Find Th17 old specific clones
+cur_mat.old.Th17 <- cur_mat[rowSums(cur_mat[,grepl("Th17-_young",
+                                    colnames(cur_mat))]) < 0.0001 & 
+                              rowSums(cur_mat[,grepl("Th1-_old", 
+                                    colnames(cur_mat))]) < 0.0001 &
+                              rowSums(cur_mat[,grepl("Th1-_young",
+                                    colnames(cur_mat))]) < 0.0001,]
+cur_mat.old.Th17 <- cur_mat.old.Th17[order(rowMeans(cur_mat.old.Th17), 
+                                         decreasing = TRUE),]
+
+# Find Th17  specific clones
+cur_mat.Th17 <- cur_mat[rowSums(cur_mat[,grepl("Th17-_young", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) < 0.0001 &
+                          rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.Th17 <- cur_mat.Th17[order(rowMeans(cur_mat.Th17),
+                                             decreasing = TRUE),]
+
+# Find Th1  specific clones
+cur_mat.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th1-_old", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th17-_young", 
+                              colnames(cur_mat))]) < 0.0001 &
+                          rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.Th1 <- cur_mat.Th1[order(rowMeans(cur_mat.Th1),
+                                             decreasing = TRUE),]
+
+# Find shared clones
+cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in% 
+                               c(rownames(cur_mat.old.Th1),
+                                 rownames(cur_mat.young.Th1),
+                                 rownames(cur_mat.old.Th17),
+                                 rownames(cur_mat.young.Th17),
+                                 rownames(cur_mat.Th1),
+                                 rownames(cur_mat.Th17))),]
+cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared), 
+                                       decreasing = TRUE),]
+
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_TRG_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 10)
-pheatmap(cur_mat, 
-         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+pheatmap(rbind(cur_mat.young.Th1, cur_mat.old.Th1, cur_mat.Th1,
+               cur_mat.shared, cur_mat.Th17, cur_mat.young.Th17,
+               cur_mat.old.Th17), 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
-         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
-         fontsize = 7)
+         breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
+         fontsize = 7, gaps_row = c(3, 8, 12, 54, 57, 65))
 dev.off()
 ```
 
@@ -187,14 +279,28 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Find old specific clones
+cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
+cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
+
+# Find young specific clones
+cur_mat.young <- cur_mat[rowSums(cur_mat[,grepl("old", colnames(cur_mat))]) < 0.0001,]
+cur_mat.young <- cur_mat.young[order(rowMeans(cur_mat.young), decreasing = TRUE),]
+
+# Find shared clones
+cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in% 
+                               c(rownames(cur_mat.old),
+                                 rownames(cur_mat.young))),]
+
+
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRG_CDR3.pdf", 
-    onefile = FALSE, width = 10, height = 5)
-pheatmap(cur_mat, 
-         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+    onefile = FALSE, width = 10, height = 10)
+pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
-         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
-         fontsize = 7)
+         breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
 dev.off()
 ```
 
@@ -245,14 +351,29 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Find old specific clones
+cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
+cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
+
+# Find young specific clones
+cur_mat.young <- cur_mat[rowSums(cur_mat[,grepl("old", colnames(cur_mat))]) < 0.0001,]
+cur_mat.young <- cur_mat.young[order(rowMeans(cur_mat.young), decreasing = TRUE),]
+
+# Find shared clones
+cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in% 
+                               c(rownames(cur_mat.old),
+                                 rownames(cur_mat.young))),]
+cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared), 
+                                       decreasing = TRUE),]
+
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_TRD_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 15)
-pheatmap(cur_mat, 
-         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
-         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
-         fontsize = 7)
+         breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
 dev.off()
 ```
 
@@ -303,14 +424,91 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Find Th1 young specific clones
+cur_mat.young.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_old", 
+                              colnames(cur_mat))]) < 0.0001 &
+                               rowSums(cur_mat[,grepl("Th17-_young", 
+                              colnames(cur_mat))]) < 0.0001 &
+                               rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.young.Th1 <- cur_mat.young.Th1[order(rowMeans(cur_mat.young.Th1),
+                                             decreasing = TRUE),]
+
+# Find Th1 old specific clones
+cur_mat.old.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_young", 
+                                    colnames(cur_mat))]) < 0.0001 &
+                             rowSums(cur_mat[,grepl("Th17-_old", 
+                                    colnames(cur_mat))]) < 0.0001 &
+                             rowSums(cur_mat[,grepl("Th17-_young", 
+                                    colnames(cur_mat))]) < 0.0001,]
+cur_mat.old.Th1 <- cur_mat.old.Th1[order(rowMeans(cur_mat.old.Th1), 
+                                         decreasing = TRUE),]
+
+# Find Th17 young specific clones
+cur_mat.young.Th17 <- cur_mat[rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) < 0.0001 &
+                                rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) < 0.0001 & 
+                                rowSums(cur_mat[,grepl("Th1-_old", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.young.Th17 <- cur_mat.young.Th17[order(rowMeans(cur_mat.young.Th17),
+                                             decreasing = TRUE),]
+
+# Find Th17 old specific clones
+cur_mat.old.Th17 <- cur_mat[rowSums(cur_mat[,grepl("Th17-_young",
+                                    colnames(cur_mat))]) < 0.0001 & 
+                              rowSums(cur_mat[,grepl("Th1-_old", 
+                                    colnames(cur_mat))]) < 0.0001 &
+                              rowSums(cur_mat[,grepl("Th1-_young",
+                                    colnames(cur_mat))]) < 0.0001,]
+cur_mat.old.Th17 <- cur_mat.old.Th17[order(rowMeans(cur_mat.old.Th17), 
+                                         decreasing = TRUE),]
+
+# Find Th17  specific clones
+cur_mat.Th17 <- cur_mat[rowSums(cur_mat[,grepl("Th17-_young", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) < 0.0001 &
+                          rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.Th17 <- cur_mat.Th17[order(rowMeans(cur_mat.Th17),
+                                             decreasing = TRUE),]
+
+# Find Th1  specific clones
+cur_mat.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_young", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th1-_old", 
+                              colnames(cur_mat))]) > 0.0001 &
+                          rowSums(cur_mat[,grepl("Th17-_young", 
+                              colnames(cur_mat))]) < 0.0001 &
+                          rowSums(cur_mat[,grepl("Th17-_old", 
+                              colnames(cur_mat))]) < 0.0001,]
+cur_mat.Th1 <- cur_mat.Th1[order(rowMeans(cur_mat.Th1),
+                                             decreasing = TRUE),]
+
+# Find shared clones
+cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in% 
+                               c(rownames(cur_mat.old.Th1),
+                                 rownames(cur_mat.young.Th1),
+                                 rownames(cur_mat.old.Th17),
+                                 rownames(cur_mat.young.Th17),
+                                 rownames(cur_mat.Th1),
+                                 rownames(cur_mat.Th17))),]
+cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared), 
+                                       decreasing = TRUE),]
+
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_TRD_CDR3.pdf", 
-    onefile = FALSE, width = 10, height = 20)
-pheatmap(cur_mat, 
-         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+    onefile = FALSE, width = 10, height = 25)
+pheatmap(rbind(cur_mat.young.Th1, cur_mat.old.Th1, cur_mat.Th1,
+               cur_mat.shared, cur_mat.Th17, cur_mat.young.Th17,
+               cur_mat.old.Th17), 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
-         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
-         fontsize = 7)
+         breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
+         fontsize = 7, gaps_row = c(44, 78, 87, 98, 113, 147))
 dev.off()
 ```
 
@@ -343,14 +541,28 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Find old specific clones
+cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
+cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
+
+# Find young specific clones
+cur_mat.young <- cur_mat[rowSums(cur_mat[,grepl("old", colnames(cur_mat))]) < 0.0001,]
+cur_mat.young <- cur_mat.young[order(rowMeans(cur_mat.young), decreasing = TRUE),]
+
+# Find shared clones
+cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in% 
+                               c(rownames(cur_mat.old),
+                                 rownames(cur_mat.young))),]
+
+
 # Visualize in form of heatmap
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRD_CDR3.pdf", 
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRG_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 15)
-pheatmap(cur_mat, 
-         color = c("grey", colorRampPalette(c("white", "blue", "red"))(999)),
+pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+         color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
-         breaks = seq(0, max(cur_mat), length.out = 1000), cellheight = 8, 
-         fontsize = 7)
+         breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
 dev.off()
 ```
 
