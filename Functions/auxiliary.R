@@ -142,3 +142,31 @@ clones.fraction <- function(files, name, clones){
   out_vector
 }
 
+#### Function to compute shared clones
+shared_clones <- function(files, in.names){
+  cur_files <- lapply(as.list(files), function(n){
+      read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  })
+  
+  mat.out <- matrix(data = NA, ncol = length(cur_files), 
+                    nrow = length(cur_files))
+  colnames(mat.out) <- rownames(mat.out) <- in.names
+  
+  for(i in 1:length(cur_files)){
+    for(j in 1:length(cur_files)){
+      if(j <= i){
+        mat.out[i,j] <- length(intersect(cur_files[[i]]$clonalSequence,
+                                    cur_files[[j]]$clonalSequence))
+      }
+      else{
+        cur_inter <- length(intersect(cur_files[[i]]$clonalSequence,
+                                      cur_files[[j]]$clonalSequence))
+        mat.out[i,j] <- cur_inter/(length(cur_files[[i]]$clonalSequence) + 
+                                 length(cur_files[[j]]$clonalSequence) -
+                                  cur_inter)
+      }
+    }
+  }
+  mat.out
+}
+
