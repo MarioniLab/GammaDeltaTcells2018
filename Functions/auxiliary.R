@@ -143,7 +143,7 @@ clones.fraction <- function(files, name, clones){
 }
 
 #### Function to compute shared clones
-shared_clones <- function(files, in.names, all.reads = FALSE){
+shared_clones <- function(files, in.names, all.reads = FALSE, subsample = NULL){
   cur_files <- lapply(as.list(files), function(n){
       read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   })
@@ -160,14 +160,28 @@ shared_clones <- function(files, in.names, all.reads = FALSE){
                    times = cur_files[[i]]$cloneCount)
           y <- rep(cur_files[[j]]$clonalSequence,
                    times = cur_files[[j]]$cloneCount)
+          if(!is.null(subsample)){
+            set.seed(12345)
+            x <- x[sample(1:length(x), subsample)]
+            set.seed(12345)
+            y <- y[sample(1:length(y), subsample)]
+          }
+          
           mat.out[i,j] <- length(rep(sort(intersect(x, y)), 
-                                     pmin(table(x[x %in% y]), table(y[y %in% x]))))
+                                       pmin(table(x[x %in% y]), table(y[y %in% x]))))
+
         }
         else{
           x <- rep(cur_files[[i]]$clonalSequence, 
                    times = cur_files[[i]]$cloneCount)
           y <- rep(cur_files[[j]]$clonalSequence,
                    times = cur_files[[j]]$cloneCount)
+          if(!is.null(subsample)){
+            set.seed(12345)
+            x <- x[sample(1:length(x), subsample)]
+            set.seed(12345)
+            y <- y[sample(1:length(y), subsample)]
+          }
           cur_inter <- length(rep(sort(intersect(x, y)), 
                                      pmin(table(x[x %in% y]), table(y[y %in% x]))))
 
