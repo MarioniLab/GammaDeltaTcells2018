@@ -143,7 +143,7 @@ clones.fraction <- function(files, name, clones){
 }
 
 #### Function to compute shared clones
-shared_clones <- function(files, in.names){
+shared_clones <- function(files, in.names, all.reads = FALSE){
   cur_files <- lapply(as.list(files), function(n){
       read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   })
@@ -152,21 +152,50 @@ shared_clones <- function(files, in.names){
                     nrow = length(cur_files))
   colnames(mat.out) <- rownames(mat.out) <- in.names
   
-  for(i in 1:length(cur_files)){
-    for(j in 1:length(cur_files)){
-      if(j <= i){
-        mat.out[i,j] <- length(intersect(cur_files[[i]]$clonalSequence,
-                                    cur_files[[j]]$clonalSequence))
-      }
-      else{
-        cur_inter <- length(intersect(cur_files[[i]]$clonalSequence,
-                                      cur_files[[j]]$clonalSequence))
-        mat.out[i,j] <- cur_inter/(length(cur_files[[i]]$clonalSequence) + 
-                                 length(cur_files[[j]]$clonalSequence) -
-                                  cur_inter)
+  if(all.reads){
+    for(i in 1:length(cur_files)){
+      for(j in 1:length(cur_files)){
+        if(j <= i){
+          x <- rep(cur_files[[i]]$clonalSequence, 
+                   times = cur_files[[i]]$cloneCount)
+          y <- rep(cur_files[[j]]$clonalSequence,
+                   times = cur_files[[j]]$cloneCount)
+          mat.out[i,j] <- length(rep(sort(intersect(x, y)), 
+                                     pmin(table(x[x %in% y]), table(y[y %in% x]))))
+        }
+        else{
+          x <- rep(cur_files[[i]]$clonalSequence, 
+                   times = cur_files[[i]]$cloneCount)
+          y <- rep(cur_files[[j]]$clonalSequence,
+                   times = cur_files[[j]]$cloneCount)
+          cur_inter <- length(rep(sort(intersect(x, y)), 
+                                     pmin(table(x[x %in% y]), table(y[y %in% x]))))
+
+          mat.out[i,j] <- cur_inter/(length(x) + 
+                                       length(y) -
+                                       cur_inter)
+        }
       }
     }
   }
+  else{
+    for(i in 1:length(cur_files)){
+      for(j in 1:length(cur_files)){
+        if(j <= i){
+          mat.out[i,j] <- length(intersect(cur_files[[i]]$clonalSequence,
+                                           cur_files[[j]]$clonalSequence))
+        }
+        else{
+          cur_inter <- length(intersect(cur_files[[i]]$clonalSequence,
+                                        cur_files[[j]]$clonalSequence))
+          mat.out[i,j] <- cur_inter/(length(cur_files[[i]]$clonalSequence) + 
+                                       length(cur_files[[j]]$clonalSequence) -
+                                       cur_inter)
+        }
+      }
+    }
+  }
+  
   mat.out
 }
 

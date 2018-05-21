@@ -19,6 +19,7 @@ library(reshape2)
 library(ggplot2)
 library(cowplot)
 library(pheatmap)
+library(openxlsx)
 source("../../Functions/auxiliary.R")
 
 # Read in mixcr mapping results - one chain per .txt file
@@ -35,6 +36,8 @@ all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.c
 TRG.files <- all.files[grepl("TRG", all.files)]
 TRD.files <- all.files[grepl("TRD", all.files)]
 ```
+
+# Not considering size of clone
 
 # TRG analysis
 
@@ -68,6 +71,9 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          number_format = "%.0f", number_color = "black",
          gaps_row = 5, gaps_col = 5)
 dev.off()
+
+# Write out xlsx
+write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg1.xlsx")
 ```
 
 ## Vg4 cells
@@ -100,6 +106,9 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          number_format = "%.0f", number_color = "black",
          gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
 dev.off()
+
+# Write out xlsx
+write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg4.xlsx")
 ```
 
 ## Vg6 cells
@@ -132,6 +141,9 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          number_format = "%.0f", number_color = "black",
          gaps_row = 6, gaps_col = 6)
 dev.off()
+
+# Write out xlsx
+write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg6.xlsx")
 ```
 
 # TRD analysis
@@ -166,6 +178,9 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          number_format = "%.0f", number_color = "black",
          gaps_row = 5, gaps_col = 5)
 dev.off()
+
+# Write out xlsx
+write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg1.xlsx")
 ```
 
 ## Vg4 cells
@@ -198,6 +213,9 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          number_format = "%.0f", number_color = "black",
          gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
 dev.off()
+
+# Write out xlsx
+write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg4.xlsx")
 ```
 
 ## Vg6 cells
@@ -230,4 +248,223 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          number_format = "%.0f", number_color = "black",
          gaps_row = 6, gaps_col = 6)
 dev.off()
+
+# Write out xlsx
+write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg6.xlsx")
+```
+
+# Considering size of clone
+
+# TRG analysis
+
+## Vg1 cells
+
+```{r}
+cur_files <- TRG.files[grepl("Vg1_Th1", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg1_Th1", TRG.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+
+# Write out xlsx
+write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg1_ConsSize.xlsx")
+```
+
+## Vg4 cells
+
+```{r}
+cur_files <- TRG.files[grepl("Vg4", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg4", TRG.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+
+# Write out xlsx
+write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg4_ConsSize.xlsx")
+```
+
+## Vg6 cells
+
+```{r}
+cur_files <- TRG.files[grepl("Vg6_Th17", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg6_Th17", TRG.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+
+# Write out xlsx
+write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg6_ConsSize.xlsx")
+```
+
+# TRD analysis
+
+## Vg1 cells
+
+```{r}
+cur_files <- TRD.files[grepl("Vg1_Th1", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg1_Th1", TRD.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRD_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRD_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg1
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 5, gaps_col = 5)
+dev.off()
+
+# Write out xlsx
+write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg1_ConsSize.xlsx")
+```
+
+## Vg4 cells
+
+```{r}
+cur_files <- TRD.files[grepl("Vg4", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg4", TRD.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRD_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRD_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg4
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
+dev.off()
+
+# Write out xlsx
+write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg4_ConsSize.xlsx")
+```
+
+## Vg6 cells
+
+```{r}
+cur_files <- TRD.files[grepl("Vg6_Th17", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg6_Th17", TRD.files)], 106)), ".",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRD_1.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("light blue", "green", "yellow", "red"),
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRD_2.pdf", 
+    onefile = FALSE, width = 5, height = 5)
+cur_mat <- Vg6
+cur_mat[upper.tri(cur_mat)] <- NA
+pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE, 
+         color = c("gray"), display_numbers = TRUE, 
+         number_format = "%.0f", number_color = "black",
+         gaps_row = 6, gaps_col = 6)
+dev.off()
+
+# Write out xlsx
+write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg6_ConsSize.xlsx")
 ```
