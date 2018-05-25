@@ -23,6 +23,7 @@ library(reshape2)
 library(ggplot2)
 library(cowplot)
 library(pheatmap)
+library(readxl)
 source("../../Functions/auxiliary.R")
 
 # Read in mixcr mapping results - one chain per .txt file
@@ -38,13 +39,18 @@ all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.c
 # All files containing TRG
 TRG.files <- all.files[grepl("TRG", all.files)]
 TRD.files <- all.files[grepl("TRD", all.files)]
+
+# Chain annotation
+annot <- as.data.frame(read_xls("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Variable_sequences_to_edit.xls"))
+annot$`IMGT sub-group`[is.na(annot$`IMGT sub-group`)] <- annot$names[is.na(annot$`IMGT sub-group`)]
+rownames(annot) <- annot$names
 ```
 
 # TRG
 
 ## Collect top 10 expanded clones for each old library
 
-```{r expansion}
+```{r}
 # Find clones - old
 Vg1_old_TRG_V1 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V1")
 #Vg1_old_TRG_V3 <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRG"), select = "TCRG-V3")
@@ -68,6 +74,10 @@ cur_clones <- data.frame(na = unique(c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na)),
                          aa = c(Vg1_old_TRG_V1$aa, Vg1_young_TRG_V1$aa)[
                            match(unique(c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na)),
                                  c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na))
+                         ],
+                         chain = c(Vg1_old_TRG_V1$chain, Vg1_young_TRG_V1$chain)[
+                           match(unique(c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na)),
+                                 c(Vg1_old_TRG_V1$na, Vg1_young_TRG_V1$na))
                          ])
 rownames(cur_clones) <- cur_clones$na
 
@@ -89,6 +99,12 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
+
 # Find old specific clones
 cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
 cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
@@ -107,11 +123,13 @@ cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared),
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_TRG_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 10)
-pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+print(pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
          color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
-         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old),
+                                    nrow(cur_mat.old)+nrow(cur_mat.shared)),
+         annotation_row = annot.df))
 dev.off()
 ```
 
@@ -127,6 +145,19 @@ cur_clones <- data.frame(na = unique(c(Vg4_Th1_old_TRG_V4$na,
                                 Vg4_Th1_young_TRG_V4$aa,
                                 Vg4_Th17_old_TRG_V4$aa,
                                 Vg4_Th17_young_TRG_V4$aa)[
+                           match(unique(c(Vg4_Th1_old_TRG_V4$na,
+                                       Vg4_Th1_young_TRG_V4$na,
+                                       Vg4_Th17_old_TRG_V4$na,
+                                       Vg4_Th17_young_TRG_V4$na)),
+                                 c(Vg4_Th1_old_TRG_V4$na,
+                                       Vg4_Th1_young_TRG_V4$na,
+                                       Vg4_Th17_old_TRG_V4$na,
+                                       Vg4_Th17_young_TRG_V4$na))
+                         ],
+                         chain = c(Vg4_Th1_old_TRG_V4$chain,
+                                Vg4_Th1_young_TRG_V4$chain,
+                                Vg4_Th17_old_TRG_V4$chain,
+                                Vg4_Th17_young_TRG_V4$chain)[
                            match(unique(c(Vg4_Th1_old_TRG_V4$na,
                                        Vg4_Th1_young_TRG_V4$na,
                                        Vg4_Th17_old_TRG_V4$na,
@@ -161,6 +192,12 @@ for(i in c.names){
 cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
 
 # Find Th1 young specific clones
 cur_mat.young.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_old", 
@@ -240,13 +277,14 @@ cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared),
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_TRG_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 10)
-pheatmap(rbind(cur_mat.young.Th1, cur_mat.old.Th1, cur_mat.Th1,
+print(pheatmap(rbind(cur_mat.young.Th1, cur_mat.old.Th1, cur_mat.Th1,
                cur_mat.shared, cur_mat.Th17, cur_mat.young.Th17,
                cur_mat.old.Th17), 
          color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
-         fontsize = 7, gaps_row = c(3, 8, 12, 54, 57, 65))
+         fontsize = 7, gaps_row = c(3, 8, 12, 54, 57, 65),
+         annotation_row = annot.df))
 dev.off()
 ```
 
@@ -256,6 +294,10 @@ dev.off()
 # Merge clones
 cur_clones <- data.frame(na = unique(c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na)),
                          aa = c(Vg6_old_TRG_V6$aa, Vg6_young_TRG_V6$aa)[
+                           match(unique(c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na)),
+                                 c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na))
+                         ],
+                         chain = c(Vg6_old_TRG_V6$chain, Vg6_young_TRG_V6$chain)[
                            match(unique(c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na)),
                                  c(Vg6_old_TRG_V6$na, Vg6_young_TRG_V6$na))
                          ])
@@ -279,6 +321,12 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
+
 # Find old specific clones
 cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
 cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
@@ -296,11 +344,12 @@ cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in%
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRG_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 10)
-pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+print(pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
          color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
-         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)),
+         annotation_row = annot.df))
 dev.off()
 ```
 
@@ -308,18 +357,34 @@ dev.off()
 
 ## Collect top 10 expanded clones for each old library
 
-```{r expansion}
+```{r}
 # Find clones - old
-Vg1_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRD"))
-Vg4_Th1_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRD", "Th1-"))
-Vg4_Th17_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRD", "Th17-"))
-Vg6_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg6", "old", "TRD"))
+Vg1_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg1", "old", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg4_Th1_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRD", "Th1-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg4_Th17_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "old", "TRD", "Th17-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg6_old_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg6", "old", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
 
 # Find clones - young
-Vg1_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg1", "young", "TRD"))
-Vg4_Th1_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRD", "Th1-"))
-Vg4_Th17_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRD", "Th17-"))
-Vg6_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg6", "young", "TRD"))
+Vg1_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg1", "young", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg4_Th1_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRD", "Th1-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg4_Th17_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg4", "young", "TRD", "Th17-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg6_young_TRD <- topCDR3(all.files, top = 10, keywords = c("Vg6", "young", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
 ```
 
 ## Visuailze Vg1 cells
@@ -330,7 +395,12 @@ cur_clones <- data.frame(na = unique(c(Vg1_old_TRD$na, Vg1_young_TRD$na)),
                          aa = c(Vg1_old_TRD$aa, Vg1_young_TRD$aa)[
                            match(unique(c(Vg1_old_TRD$na, Vg1_young_TRD$na)),
                                  c(Vg1_old_TRD$na, Vg1_young_TRD$na))
-                         ], stringsAsFactors = FALSE)
+                         ],
+                         chain = c(Vg1_old_TRD$chain, Vg1_young_TRD$chain)[
+                           match(unique(c(Vg1_old_TRD$na, Vg1_young_TRD$na)),
+                                 c(Vg1_old_TRD$na, Vg1_young_TRD$na))
+                         ],
+                         stringsAsFactors = FALSE)
 rownames(cur_clones) <- cur_clones$na
 
 c.names <- c(paste("Vg1_Th1-_old_TRD_X", 
@@ -351,6 +421,12 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
+
 # Find old specific clones
 cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
 cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
@@ -369,11 +445,12 @@ cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared),
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_TRD_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 15)
-pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+print(pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
          color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
-         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)),
+         annotation_row = annot.df))
 dev.off()
 ```
 
@@ -389,6 +466,19 @@ cur_clones <- data.frame(na = unique(c(Vg4_Th1_old_TRD$na,
                                 Vg4_Th1_young_TRD$aa,
                                 Vg4_Th17_old_TRD$aa,
                                 Vg4_Th17_young_TRD$aa)[
+                           match(unique(c(Vg4_Th1_old_TRD$na,
+                                       Vg4_Th1_young_TRD$na,
+                                       Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na)),
+                                 c(Vg4_Th1_old_TRD$na,
+                                       Vg4_Th1_young_TRD$na,
+                                       Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na))
+                         ],
+                         chain = c(Vg4_Th1_old_TRD$chain,
+                                Vg4_Th1_young_TRD$chain,
+                                Vg4_Th17_old_TRD$chain,
+                                Vg4_Th17_young_TRD$chain)[
                            match(unique(c(Vg4_Th1_old_TRD$na,
                                        Vg4_Th1_young_TRD$na,
                                        Vg4_Th17_old_TRD$na,
@@ -423,6 +513,12 @@ for(i in c.names){
 cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
 
 # Find Th1 young specific clones
 cur_mat.young.Th1 <- cur_mat[rowSums(cur_mat[,grepl("Th1-_old", 
@@ -502,14 +598,40 @@ cur_mat.shared <- cur_mat.shared[order(rowMeans(cur_mat.shared),
 # Visualize in form of heatmap
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_TRD_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 25)
-pheatmap(rbind(cur_mat.young.Th1, cur_mat.old.Th1, cur_mat.Th1,
+print(pheatmap(rbind(cur_mat.young.Th1, cur_mat.old.Th1, cur_mat.Th1,
                cur_mat.shared, cur_mat.Th17, cur_mat.young.Th17,
                cur_mat.old.Th17), 
          color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
-         fontsize = 7, gaps_row = c(44, 78, 87, 98, 113, 147))
+         fontsize = 7, gaps_row = c(44, 78, 87, 98, 113, 147),
+         annotation_row = annot.df))
 dev.off()
+```
+
+### Visualize clone fractions for each chain
+
+```{r, fig.height=15, fig.width=15}
+for(i in as.character(unique(annot.df$chain))){
+  if(sum(annot.df$chain == i) < 2){next}
+  cur_chain <- cur_mat[rownames(annot.df)[annot.df$chain == i],]
+  cur_chain.melt <- melt(cur_chain)
+  cur_chain.melt$Age <- sapply(as.character(cur_chain.melt$Var2), function(n){
+    unlist(strsplit(n, "_"))[3]
+  })
+  cur_chain.melt$Priming <- sapply(as.character(cur_chain.melt$Var2), function(n){
+    unlist(strsplit(n, "_"))[2]
+  })
+  cur_chain.melt <- cur_chain.melt[cur_chain.melt$Priming == "Th17-",]
+  
+  cur_p <- ggplot(cur_chain.melt, aes(Var1, value, fill = Age, group = Age)) + 
+  geom_point(shape = 21, size = 3, position=position_dodge(width = 0.5)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 12)) + 
+  xlab("Clone") + ylab("Clone fraction") + ggtitle(paste("Th17", i)) +
+  scale_fill_manual(values = c("red", "white"))
+  print(cur_p)
+}
 ```
 
 ## Visuailze Vg6 cells
@@ -518,6 +640,10 @@ dev.off()
 # Merge clones
 cur_clones <- data.frame(na = unique(c(Vg6_old_TRD$na, Vg6_young_TRD$na)),
                          aa = c(Vg6_old_TRD$aa, Vg6_young_TRD$aa)[
+                           match(unique(c(Vg6_old_TRD$na, Vg6_young_TRD$na)),
+                                 c(Vg6_old_TRD$na, Vg6_young_TRD$na))
+                         ],
+                         chain = c(Vg6_old_TRD$chain, Vg6_young_TRD$chain)[
                            match(unique(c(Vg6_old_TRD$na, Vg6_young_TRD$na)),
                                  c(Vg6_old_TRD$na, Vg6_young_TRD$na))
                          ])
@@ -541,6 +667,12 @@ cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
 rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
                            cur_clones[rownames(cur_mat),"aa"], sep = ", ")
 
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
+
 # Find old specific clones
 cur_mat.old <- cur_mat[rowSums(cur_mat[,grepl("young", colnames(cur_mat))]) < 0.0001,]
 cur_mat.old <- cur_mat.old[order(rowMeans(cur_mat.old), decreasing = TRUE),]
@@ -556,13 +688,14 @@ cur_mat.shared <- cur_mat[!(rownames(cur_mat) %in%
 
 
 # Visualize in form of heatmap
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRG_CDR3.pdf", 
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_TRD_CDR3.pdf", 
     onefile = FALSE, width = 10, height = 15)
-pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
+print(pheatmap(rbind(cur_mat.old, cur_mat.shared, cur_mat.young), 
          color = c("grey", colorRampPalette(c("white", "blue", "red"))(9999)),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          breaks = seq(0, max(cur_mat), length.out = 10000), cellheight = 8, 
-         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)))
+         fontsize = 7, gaps_row = c(nrow(cur_mat.old), nrow(cur_mat.old)+nrow(cur_mat.shared)),
+         annotation_row = annot.df))
 dev.off()
 ```
 

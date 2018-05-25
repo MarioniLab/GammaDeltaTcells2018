@@ -55,7 +55,8 @@ chain.prop <- function(files, keywords, annotation = NULL){
 }
 
 #### CDR3 analysis
-topCDR3 <- function(files, top, keywords, select = NULL){
+topCDR3 <- function(files, top, keywords, select = NULL,
+                    annotation = NULL){
   cur_files <- lapply(as.list(files), function(n){
     if(all(sapply(keywords, grepl, n))){
       read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
@@ -97,11 +98,29 @@ topCDR3 <- function(files, top, keywords, select = NULL){
       n$aaSeqCDR3[1:top]
     }
     else{
-      n$clonalSequence
+      n$aaSeqCDR3
     }
   }))
+  
+  cur_out.chain <- unlist(lapply(cur_files, function(n){
+    if(length(n$clonalSequence) > 1){
+      as.character(n$allVHitsWithScore[1:top])
+    }
+    else{
+      as.character(n$allVHitsWithScore)
+    }
+  }))
+  
+  # Reannotate chains
+  if(!is.null(annotation)){
+    cur_out.chain <- as.character(annotation[cur_out.chain,])
+  }
+  
+  
   data.frame(na = cur_out.na.unique[!is.na(cur_out.na.unique)],
-                   aa = cur_out.aa[match(cur_out.na.unique[!is.na(cur_out.na.unique)],
+             aa = cur_out.aa[match(cur_out.na.unique[!is.na(cur_out.na.unique)],
+                                         cur_out.na)],
+             chain = cur_out.chain[match(cur_out.na.unique[!is.na(cur_out.na.unique)],
                                          cur_out.na)], stringsAsFactors = FALSE)
 }
 
@@ -138,7 +157,8 @@ clones.fraction <- function(files, name, clones){
   cur_rep <- cur_files[[as.numeric(replicate)]]
   
   out_vector <- rep(0, length(clones))
-  out_vector[clones %in% cur_rep$clonalSequence] <- cur_rep$cloneFraction[cur_rep$clonalSequence %in% clones[clones %in% cur_rep$clonalSequence]]
+  m <- match(cur_rep$clonalSequence, clones)
+  out_vector[m[!is.na(m)]] <- cur_rep$cloneFraction[!is.na(m)]
   out_vector
 }
 
