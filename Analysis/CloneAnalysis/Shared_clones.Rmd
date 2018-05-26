@@ -1,12 +1,12 @@
 ---
 title: "Shared clone analysis"
-author: "Nils Eling"
+author: "eling01 Eling"
 output: 
   html_document:
     toc: true
     toc_depth: 2
 knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
-        encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Shared_clones.html') })
+        encoding = encoding, output_file = '/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Shared_clones.html') })
 ---
 
 ```{r setup, include=FALSE}
@@ -23,10 +23,10 @@ library(openxlsx)
 source("../../Functions/auxiliary.R")
 
 # Read in mixcr mapping results - one chain per .txt file
-all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
+all.files <- list.files("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
 
 # Read in normalized counts
-norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
+norm <- read.table("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
 libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
 
 # Remove low quality libraries
@@ -53,7 +53,7 @@ cur_names <- cur_names[order(cur_names)]
 
 Vg1 <- shared_clones(cur_files, cur_names, select = "TCRG-V1")
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -62,7 +62,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 5, gaps_col = 5)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -73,7 +73,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg1.xlsx")
+write.xlsx(Vg1, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg1.xlsx")
 ```
 
 ## Vg4 cells
@@ -88,7 +88,7 @@ cur_names <- cur_names[order(cur_names)]
 
 Vg4 <- shared_clones(cur_files, cur_names, select = "TCRG-V4")
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -97,7 +97,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -108,7 +108,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg4.xlsx")
+write.xlsx(Vg4, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg4.xlsx")
 ```
 
 ## Vg6 cells
@@ -123,7 +123,7 @@ cur_names <- cur_names[order(cur_names)]
 
 Vg6 <- shared_clones(cur_files, cur_names, select = "TCRG-V6")
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -132,7 +132,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 6, gaps_col = 6)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -143,7 +143,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg6.xlsx")
+write.xlsx(Vg6, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg6.xlsx")
 ```
 
 # TRD analysis
@@ -160,7 +160,7 @@ cur_names <- cur_names[order(cur_names)]
 
 Vg1 <- shared_clones(cur_files, cur_names)
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRD_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRD_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -169,7 +169,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 5, gaps_col = 5)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRD_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRD_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -180,7 +180,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg1.xlsx")
+write.xlsx(Vg1, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg1.xlsx")
 ```
 
 ## Vg4 cells
@@ -195,7 +195,7 @@ cur_names <- cur_names[order(cur_names)]
 
 Vg4 <- shared_clones(cur_files, cur_names)
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRD_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRD_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -204,7 +204,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRD_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRD_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -215,7 +215,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg4.xlsx")
+write.xlsx(Vg4, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg4.xlsx")
 ```
 
 ## Vg6 cells
@@ -230,7 +230,7 @@ cur_names <- cur_names[order(cur_names)]
 
 Vg6 <- shared_clones(cur_files, cur_names)
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRD_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRD_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -239,7 +239,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 6, gaps_col = 6)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRD_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRD_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -250,7 +250,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg6.xlsx")
+write.xlsx(Vg6, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg6.xlsx")
 ```
 
 # Considering size of clone
@@ -267,9 +267,10 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE, select = "TCRG-V1")
+Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE, subsample = 200, 
+                     select = "TCRG-V1")
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -278,7 +279,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 5, gaps_col = 5)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -289,7 +290,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg1_ConsSize.xlsx")
+write.xlsx(Vg1, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg1_ConsSize.xlsx")
 ```
 
 ## Vg4 cells
@@ -302,9 +303,10 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE, , select = "TCRG-V4")
+Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE, subsample = 550,
+                     select = "TCRG-V4")
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -313,7 +315,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -324,7 +326,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg4_ConsSize.xlsx")
+write.xlsx(Vg4, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg4_ConsSize.xlsx")
 ```
 
 ## Vg6 cells
@@ -337,9 +339,10 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE, select = "TCRG-V6")
+Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE, subsample = 3000,
+                     select = "TCRG-V6")
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -348,7 +351,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 6, gaps_col = 6)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -359,7 +362,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg6_ConsSize.xlsx")
+write.xlsx(Vg6, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRG/Vg6_ConsSize.xlsx")
 ```
 
 # TRD analysis
@@ -374,9 +377,9 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE, subsample = 450)
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRD_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRD_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -385,7 +388,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 5, gaps_col = 5)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRD_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRD_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg1
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -396,7 +399,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg1, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg1_ConsSize.xlsx")
+write.xlsx(Vg1, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg1_ConsSize.xlsx")
 ```
 
 ## Vg4 cells
@@ -409,9 +412,9 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE, subsample = 700)
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRD_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRD_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -420,7 +423,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = c(4, 10, 14), gaps_col = c(4, 10, 14))
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRD_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRD_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg4
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -431,7 +434,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg4, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg4_ConsSize.xlsx")
+write.xlsx(Vg4, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg4_ConsSize.xlsx")
 ```
 
 ## Vg6 cells
@@ -444,9 +447,9 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE, subsample = 1300)
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRD_1.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRD_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[lower.tri(cur_mat, diag = TRUE)] <- NA
@@ -455,7 +458,7 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
          gaps_row = 6, gaps_col = 6)
 dev.off()
 
-pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRD_2.pdf", 
+pdf("/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRD_2.pdf", 
     onefile = FALSE, width = 5, height = 5)
 cur_mat <- Vg6
 cur_mat[upper.tri(cur_mat)] <- NA
@@ -466,5 +469,5 @@ pheatmap(cur_mat, cluster_rows = FALSE, cluster_cols = FALSE,
 dev.off()
 
 # Write out xlsx
-write.xlsx(Vg6, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg6_ConsSize.xlsx")
+write.xlsx(Vg6, "/Users/eling01/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Clones/Shared_clones/TRD/Vg6_ConsSize.xlsx")
 ```
