@@ -51,7 +51,7 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg1 <- shared_clones(cur_files, cur_names)
+Vg1 <- shared_clones(cur_files, cur_names, select = "TCRG-V1")
 
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
@@ -86,7 +86,7 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg4 <- shared_clones(cur_files, cur_names)
+Vg4 <- shared_clones(cur_files, cur_names, select = "TCRG-V4")
 
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
@@ -121,7 +121,7 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg6 <- shared_clones(cur_files, cur_names)
+Vg6 <- shared_clones(cur_files, cur_names, select = "TCRG-V6")
 
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
@@ -267,7 +267,7 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+Vg1 <- shared_clones(cur_files, cur_names, all.reads = TRUE, select = "TCRG-V1")
 
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg1_sharedClones_ConsSize_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
@@ -302,7 +302,7 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+Vg4 <- shared_clones(cur_files, cur_names, all.reads = TRUE, , select = "TCRG-V4")
 
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg4_sharedClones_ConsSize_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)
@@ -337,7 +337,7 @@ cur_names <- paste(sub("_unk.*$", "",
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
 
-Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE)
+Vg6 <- shared_clones(cur_files, cur_names, all.reads = TRUE, select = "TCRG-V6")
 
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Figures/Vg6_sharedClones_ConsSize_TRG_1.pdf", 
     onefile = FALSE, width = 5, height = 5)

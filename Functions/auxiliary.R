@@ -163,10 +163,17 @@ clones.fraction <- function(files, name, clones){
 }
 
 #### Function to compute shared clones
-shared_clones <- function(files, in.names, all.reads = FALSE){
+shared_clones <- function(files, in.names, all.reads = FALSE, select = NULL){
   cur_files <- lapply(as.list(files), function(n){
       read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   })
+  
+  # Exclude certain V chains if select != NULL
+  if(!is.null(select)){
+    cur_files <- lapply(cur_files, function(n){
+      n[grepl(select, n$allVHitsWithScore),]
+    })
+  }
   
   mat.out <- matrix(data = NA, ncol = length(cur_files), 
                     nrow = length(cur_files))
