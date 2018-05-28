@@ -47,15 +47,16 @@ rownames(genes) <- genes$Gene.stable.ID
 
 # List of pairwise comparisons
 list.comp <- list(#"Vg1_Th1_young vs Vg4_Th1_young" = c("Vg1_Th1_young", "Vg4_Th1_young"),
-                  #"Vg4_Th17_young vs Vg6_Th17_young" = c("Vg4_Th17_young", "Vg6_Th17_young"),
-                  "Vg4_Th1_young vs Vg4_Th17_young" = c("Vg4_Th1_young", "Vg4_Th17_young"),
-                  "Vg1_Th1_young vs Vg1_Th1_old" = c("Vg1_Th1_young", "Vg1_Th1_old"),
-                  "Vg4_Th1_young vs Vg4_Th1_old" = c("Vg4_Th1_young", "Vg4_Th1_old"),
-                  "Vg4_Th17_young vs Vg4_Th17_old" = c("Vg4_Th17_young", "Vg4_Th17_old"),
-                  "Vg6_Th17_young vs Vg6_Th17_old" = c("Vg6_Th17_young", "Vg6_Th17_old"),
+                  "Vg4_Th17_young vs Vg6_Th17_young" = c("Vg4_Th17_young", "Vg6_Th17_young"),
+                  #"Vg4_Th1_young vs Vg4_Th17_young" = c("Vg4_Th1_young", "Vg4_Th17_young"),
+                  #"Vg1_Th1_young vs Vg1_Th1_old" = c("Vg1_Th1_young", "Vg1_Th1_old"),
+                  #"Vg4_Th1_young vs Vg4_Th1_old" = c("Vg4_Th1_young", "Vg4_Th1_old"),
+                  #"Vg4_Th17_young vs Vg4_Th17_old" = c("Vg4_Th17_young", "Vg4_Th17_old"),
+                  #"Vg6_Th17_young vs Vg6_Th17_old" = c("Vg6_Th17_young", "Vg6_Th17_old"),
                   #"Vg1_Th1_old vs Vg4_Th1_old" = c("Vg1_Th1_old", "Vg4_Th1_old"),
-                  #"Vg4_Th17_old vs Vg6_Th17_old" = c("Vg4_Th17_old", "Vg6_Th17_old"),
-                  "Vg4_Th1_old vs Vg4_Th17_old" = c("Vg4_Th1_old", "Vg4_Th17_old"))
+                  "Vg4_Th17_old vs Vg6_Th17_old" = c("Vg4_Th17_old", "Vg6_Th17_old")#,
+                  #"Vg4_Th1_old vs Vg4_Th17_old" = c("Vg4_Th1_old", "Vg4_Th17_old")
+                  )
 ```
 
 # Differential expression analysis
