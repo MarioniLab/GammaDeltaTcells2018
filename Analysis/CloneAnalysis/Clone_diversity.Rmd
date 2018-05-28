@@ -1,0 +1,286 @@
+---
+title: "Clone diversity"
+author: "Nils Eling"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
+        encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Clone_diversity.html') })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(cowplot)
+library(pheatmap)
+library(openxlsx)
+source("../../Functions/auxiliary.R")
+
+# Read in mixcr mapping results - one chain per .txt file
+all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
+
+# Read in normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
+libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
+
+# Remove low quality libraries
+all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
+
+# All files containing TRG
+TRG.files <- all.files[grepl("TRG", all.files)]
+TRD.files <- all.files[grepl("TRD", all.files)]
+```
+
+# TRG analysis
+
+## Vg4 Th1 cells
+
+### For individual sequences
+
+Each individual sequence is counted only once regardless of abundance
+
+```{r}
+cur_files <- TRG.files[grepl("Vg4_Th1-", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg4_Th1-", TRG.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th1 <- clone_diversity(cur_files, cur_names, select = "TCRG-V4")
+
+# Plot results
+Vg4.Th1.melt <- melt(Vg4.Th1)
+Vg4.Th1.melt$Age <- factor(sapply(as.character(Vg4.Th1.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th1.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th1.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+### Considering the size of the clone
+
+```{r}
+cur_files <- TRG.files[grepl("Vg4_Th1-", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg4_Th1-", TRG.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th1 <- clone_diversity(cur_files, cur_names, select = "TCRG-V4",
+                           all.reads = TRUE)
+
+# Plot results
+Vg4.Th1.melt <- melt(Vg4.Th1)
+Vg4.Th1.melt$Age <- factor(sapply(as.character(Vg4.Th1.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th1.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th1.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+## Vg4 Th17 cells
+
+### For individual sequences
+
+Each individual sequence is counted only once regardless of abundance
+
+```{r}
+cur_files <- TRG.files[grepl("Vg4_Th17-", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg4_Th17-", TRG.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th17 <- clone_diversity(cur_files, cur_names, select = "TCRG-V4")
+
+# Plot results
+Vg4.Th17.melt <- melt(Vg4.Th17)
+Vg4.Th17.melt$Age <- factor(sapply(as.character(Vg4.Th17.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th17.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th17.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+### Considering the size of the clone
+
+```{r}
+cur_files <- TRG.files[grepl("Vg4_Th17-", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg4_Th17-", TRG.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th17 <- clone_diversity(cur_files, cur_names, select = "TCRG-V4",
+                           all.reads = TRUE)
+
+# Plot results
+Vg4.Th17.melt <- melt(Vg4.Th17)
+Vg4.Th17.melt$Age <- factor(sapply(as.character(Vg4.Th17.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th17.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th17.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+# TRD analysis
+
+## Vg4 Th1 cells
+
+### For individual sequences
+
+Each individual sequence is counted only once regardless of abundance
+
+```{r}
+cur_files <- TRD.files[grepl("Vg4_Th1-", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg4_Th1-", TRD.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th1 <- clone_diversity(cur_files, cur_names)
+
+# Plot results
+Vg4.Th1.melt <- melt(Vg4.Th1)
+Vg4.Th1.melt$Age <- factor(sapply(as.character(Vg4.Th1.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th1.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th1.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+### Considering the size of the clone
+
+```{r}
+cur_files <- TRD.files[grepl("Vg4_Th1-", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg4_Th1-", TRD.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th1 <- clone_diversity(cur_files, cur_names,
+                           all.reads = TRUE)
+
+# Plot results
+Vg4.Th1.melt <- melt(Vg4.Th1)
+Vg4.Th1.melt$Age <- factor(sapply(as.character(Vg4.Th1.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th1.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th1.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+## Vg4 Th17 cells
+
+### For individual sequences
+
+Each individual sequence is counted only once regardless of abundance
+
+```{r}
+cur_files <- TRD.files[grepl("Vg4_Th17-", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg4_Th17-", TRD.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th17 <- clone_diversity(cur_files, cur_names)
+
+# Plot results
+Vg4.Th17.melt <- melt(Vg4.Th17)
+Vg4.Th17.melt$Age <- factor(sapply(as.character(Vg4.Th17.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th17.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th17.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```
+
+### Considering the size of the clone
+
+```{r}
+cur_files <- TRD.files[grepl("Vg4_Th17-", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg4_Th17-", TRD.files)], 106)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+Vg4.Th17 <- clone_diversity(cur_files, cur_names,
+                           all.reads = TRUE)
+
+# Plot results
+Vg4.Th17.melt <- melt(Vg4.Th17)
+Vg4.Th17.melt$Age <- factor(sapply(as.character(Vg4.Th17.melt$Var2),
+                           function(n){unlist(strsplit(n, "-"))[2]}),
+                           levels = c("old", "young"))
+Vg4.Th17.melt$Replicate <- c(rep(1:4, each = 5), rep(1:6, each = 5))
+
+
+ggplot(Vg4.Th17.melt) + 
+  geom_bar(aes(Replicate, value, fill = factor(Var1)),
+           stat = "identity") + 
+  facet_grid(.~Age, scales = "free_x") + 
+  scale_fill_manual(name = "Diversity", 
+        values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+```

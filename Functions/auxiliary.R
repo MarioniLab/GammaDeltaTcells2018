@@ -241,3 +241,66 @@ shared_clones <- function(files, in.names, all.reads = FALSE, subsample = NULL,
   mat.out
 }
 
+#### Clonal diversity analysis
+clone_diversity <- function(files, in.names, all.reads = FALSE, 
+                            subsample = NULL, select = NULL){
+  cur_files <- lapply(as.list(files), function(n){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  })
+  
+  # Exclude certain V chains if select != NULL
+  if(!is.null(select)){
+    cur_files <- lapply(cur_files, function(n){
+      n[grepl(select, n$allVHitsWithScore),]
+    })
+  }
+  
+  cur_files <- lapply(cur_files, function(n){
+    n <- data.frame(n[,c("allVHitsWithScore", "cloneCount", "cloneFraction", "clonalSequence", "aaSeqCDR3")])
+    n$allVHitsWithScore <- sapply(n$allVHitsWithScore, function(x){unlist(strsplit(x, "\\*"))[1]})
+    n
+  })
+  
+  mat <- matrix(data = NA, nrow = 5, ncol = length(cur_files))
+  colnames(mat) <- in.names
+  rownames(mat) <- c("Highly expanded: > 2%", "Expanded: 1% - 1.99%",
+                     "Frequent: 0.5% - 0.99", "Infrequent: < 0.5%",
+                     "Singletons")
+  
+  if(all.reads){
+    mat["Singletons",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneCount[n$cloneCount == 1])/sum(n$cloneCount)
+    }))
+    mat["Infrequent: < 0.5%",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneCount[n$cloneFraction < 0.005 & n$cloneCount > 1])/sum(n$cloneCount)
+    }))
+    mat["Frequent: 0.5% - 0.99",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneCount[n$cloneFraction >= 0.005 & n$cloneFraction < 0.01])/sum(n$cloneCount)
+    }))
+    mat["Expanded: 1% - 1.99%",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneCount[n$cloneFraction >= 0.01 & n$cloneFraction < 0.02])/sum(n$cloneCount)
+    }))
+    mat["Highly expanded: > 2%",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneCount[n$cloneFraction >= 0.02])/sum(n$cloneCount)
+    }))
+  }
+  else{
+    mat["Singletons",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneCount == 1)/nrow(n)
+    }))
+    mat["Infrequent: < 0.5%",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneFraction < 0.005 & n$cloneCount > 1)/nrow(n)
+    }))
+    mat["Frequent: 0.5% - 0.99",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneFraction >= 0.005 & n$cloneFraction < 0.01)/nrow(n)
+    }))
+    mat["Expanded: 1% - 1.99%",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneFraction >= 0.01 & n$cloneFraction < 0.02)/nrow(n)
+    }))
+    mat["Highly expanded: > 2%",] <- unlist(lapply(cur_files, function(n){
+      sum(n$cloneFraction >= 0.02)/nrow(n)
+    }))
+  }
+  mat
+}
+
