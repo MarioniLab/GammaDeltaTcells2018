@@ -181,6 +181,12 @@ draw.pairwise.venn(area1 = length(Th1young$GeneID),
                    fill = c("steelblue4", "coral3"))
 dev.off()
 
+# Save Th1 old signature
+write.xlsx(Th1old[is.na(match(Th1old$GeneID, shared.Th1)),], 
+           "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/Th1_old_signature.xlsx")
+write.xlsx(Th17old[is.na(match(Th17old$GeneID, shared.Th17)),], 
+           "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/Th17_old_signature.xlsx")
+
 # VennDiagram for Th17
 pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/VennDiagram_Th17.pdf",
     onefile = FALSE)
