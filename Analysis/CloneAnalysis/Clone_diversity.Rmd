@@ -46,6 +46,7 @@ TRD.files <- all.files[grepl("TRD", all.files)]
 Each individual sequence is counted only once regardless of abundance
 
 ```{r}
+# Clone diversity
 cur_files <- TRG.files[grepl("Vg4_Th1-", TRG.files)]
 cur_names <- paste(sub("_unk.*$", "", 
                  substring(TRG.files[grepl("Vg4_Th1-", TRG.files)], 106)), "-",
@@ -69,6 +70,17 @@ ggplot(Vg4.Th1.melt) +
   facet_grid(.~Age, scales = "free_x") + 
   scale_fill_manual(name = "Diversity", 
         values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+
+# Inverse Simpsons index
+Vg4.Th1 <- data.frame(inv.Simps(cur_files, cur_names, select = "TCRG-V4"))
+Vg4.Th1$Age <- sapply(rownames(Vg4.Th1), function(n){unlist(strsplit(n, "-"))[2]})
+Vg4.Th1$Replicate <- c(1:4, 1:6)
+
+ggplot(Vg4.Th1) + 
+  geom_bar(aes(Replicate, inv.Simps.cur_files..cur_names..select....TCRG.V4.., 
+               fill = factor(Replicate)),
+           stat = "identity") + ylab("Inverse Simpsons index") + 
+  facet_grid(.~Age, scales = "free_x") 
 ```
 
 ### Considering the size of the clone
@@ -130,6 +142,17 @@ ggplot(Vg4.Th17.melt) +
   facet_grid(.~Age, scales = "free_x") + 
   scale_fill_manual(name = "Diversity", 
         values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+
+# Inverse Simpsons index
+Vg4.Th17 <- data.frame(inv.Simps(cur_files, cur_names, select = "TCRG-V4"))
+Vg4.Th17$Age <- sapply(rownames(Vg4.Th17), function(n){unlist(strsplit(n, "-"))[2]})
+Vg4.Th17$Replicate <- c(1:4, 1:6)
+
+ggplot(Vg4.Th17) + 
+  geom_bar(aes(Replicate, inv.Simps.cur_files..cur_names..select....TCRG.V4.., 
+               fill = factor(Replicate)),
+           stat = "identity") + ylab("Inverse Simpsons index") + 
+  facet_grid(.~Age, scales = "free_x") 
 ```
 
 ### Considering the size of the clone
@@ -193,6 +216,17 @@ ggplot(Vg4.Th1.melt) +
   facet_grid(.~Age, scales = "free_x") + 
   scale_fill_manual(name = "Diversity", 
         values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+
+# Inverse Simpsons index
+Vg4.Th1 <- data.frame(inv.Simps(cur_files, cur_names))
+Vg4.Th1$Age <- sapply(rownames(Vg4.Th1), function(n){unlist(strsplit(n, "-"))[2]})
+Vg4.Th1$Replicate <- c(1:4, 1:6)
+
+ggplot(Vg4.Th1) + 
+  geom_bar(aes(Replicate, inv.Simps.cur_files..cur_names., 
+               fill = factor(Replicate)),
+           stat = "identity") + ylab("Inverse Simpsons index") + 
+  facet_grid(.~Age, scales = "free_x") 
 ```
 
 ### Considering the size of the clone
@@ -254,6 +288,17 @@ ggplot(Vg4.Th17.melt) +
   facet_grid(.~Age, scales = "free_x") + 
   scale_fill_manual(name = "Diversity", 
         values = c("dark blue", "blue", "steelblue", "dark green", "orange"))
+
+# Inverse Simpsons index
+Vg4.Th17 <- data.frame(inv.Simps(cur_files, cur_names))
+Vg4.Th17$Age <- sapply(rownames(Vg4.Th17), function(n){unlist(strsplit(n, "-"))[2]})
+Vg4.Th17$Replicate <- c(1:4, 1:6)
+
+ggplot(Vg4.Th17) + 
+  geom_bar(aes(Replicate, inv.Simps.cur_files..cur_names., 
+               fill = factor(Replicate)),
+           stat = "identity") + ylab("Inverse Simpsons index") + 
+  facet_grid(.~Age, scales = "free_x") 
 ```
 
 ### Considering the size of the clone

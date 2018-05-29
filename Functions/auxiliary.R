@@ -3,6 +3,7 @@
 ################################################################
 
 library(plyr)
+library(tcR)
 
 # Function to collect the total proportion of a chain across te whole population
 # of cells
@@ -302,5 +303,26 @@ clone_diversity <- function(files, in.names, all.reads = FALSE,
     }))
   }
   mat
+}
+
+#### Inverse Simpsons index
+
+inv.Simps <- function(files, in.names, 
+                      subsample = NULL, select = NULL){
+  cur_files <- lapply(as.list(files), function(n){
+    read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
+  })
+  
+  # Exclude certain V chains if select != NULL
+  if(!is.null(select)){
+    cur_files <- lapply(cur_files, function(n){
+      n[grepl(select, n$allVHitsWithScore),]
+    })
+  }
+  
+  mat <- sapply(cur_files, function(n){inverse.simpson(n$cloneCount)})
+  names(mat) <- in.names
+  mat
+  
 }
 
