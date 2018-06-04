@@ -16,12 +16,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries, message=FALSE}
 library(cowplot)
-library(DESeq2)
+library(edgeR)
 library(pheatmap)
 library(viridis)
 ```
 
 ```{r data}
+# Raw counts
+raw <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/FilteredCounts.txt", sep = "\t")
+
 # Normalized counts
 norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t")
 
@@ -72,6 +75,155 @@ pheatmap(log10(for.heatmap + 1),
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))))
 dev.off()
-
 ```
 
+# Differential expression analysis
+
+## Vg1
+
+```{r DE}
+cur_data <- raw[,grepl("Vg1", colnames(raw))]
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[3]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Old", "Young")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Old - Young, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+# Visualize results
+p.Vg1 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+                  mean = cur_res_all$logCPM,
+                  results = ifelse(cur_res_all$logFC > 0 & 
+                                     cur_res_all$FDR < 0.1, "Old",
+                                   ifelse(cur_res_all$logFC < 0 & 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
+  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+  scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  ggtitle("Vg1")
+```
+
+
+## Vg4 Th1
+
+```{r DE}
+cur_data <- raw[,grepl("Vg4_Th1_", colnames(raw))]
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[3]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Old", "Young")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Old - Young, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+# Visualize results
+p.Vg4_Th1 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+                  mean = cur_res_all$logCPM,
+                  results = ifelse(cur_res_all$logFC > 0 & 
+                                     cur_res_all$FDR < 0.1, "Old",
+                                   ifelse(cur_res_all$logFC < 0 & 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
+  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+  scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  ggtitle("Vg4 Th1")
+```
+
+## Vg4 Th17
+
+```{r DE}
+cur_data <- raw[,grepl("Vg4_Th17_", colnames(raw))]
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[3]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Old", "Young")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Old - Young, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+# Visualize results
+p.Vg4_Th17 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+                  mean = cur_res_all$logCPM,
+                  results = ifelse(cur_res_all$logFC > 0 & 
+                                     cur_res_all$FDR < 0.1, "Old",
+                                   ifelse(cur_res_all$logFC < 0 & 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
+  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+  scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  ggtitle("Vg4 Th17")
+```
+
+## Vg6 Th17
+
+```{r DE}
+cur_data <- raw[,grepl("Vg6", colnames(raw))]
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[3]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Old", "Young")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Old - Young, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+# Visualize results
+p.Vg6 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+                  mean = cur_res_all$logCPM,
+                  results = ifelse(cur_res_all$logFC > 0 & 
+                                     cur_res_all$FDR < 0.1, "Old",
+                                   ifelse(cur_res_all$logFC < 0 & 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
+  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+  scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  ggtitle("Vg6")
+```
+
+# Save figure
+
+```{r}
+final <- plot_grid(p.Vg1, p.Vg4_Th1, p.Vg4_Th17, p.Vg6, nrow = 1)
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/DE.pdf", final,
+       width = 20, height = 4)
+```
