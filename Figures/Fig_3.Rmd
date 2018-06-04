@@ -1,0 +1,77 @@
+---
+title: "Figure 3"
+author: "Nils Eling"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Read in data and libraries
+
+```{r libraries, message=FALSE}
+library(cowplot)
+library(DESeq2)
+library(pheatmap)
+library(viridis)
+```
+
+```{r data}
+# Normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t")
+
+# Load marker genes for T cells
+marker <- read.csv("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/Genelist.csv", stringsAsFactors = FALSE)
+marker <- marker[marker[,1] != '',]
+marker <- marker[grepl("ENS", marker$Ensembl.ID),]
+```
+
+# Plot PCA of libraries
+
+```{r pca}
+pca <- prcomp(t(log10(norm + 1)))
+
+# Only the young libraries
+PC12.young <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(norm)[!grepl("old", colnames(norm))]),
+                  PC1 = pca$x[!grepl("old", colnames(norm)),1],
+                  PC2 = pca$x[!grepl("old", colnames(norm)),2])) +
+  geom_point(aes(PC1, PC2, fill = condition), shape = 21, size = 2) + 
+  scale_fill_brewer(palette = "Set1") + guides(fill = FALSE)
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_young.pdf", PC12.young,
+       width = 4, height = 4)
+
+# Now only the old
+PC12.old <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(norm)[grepl("old", colnames(norm))]),
+                  PC1 = pca$x[grepl("old", colnames(norm)),1],
+                  PC2 = pca$x[grepl("old", colnames(norm)),2])) +
+  geom_point(aes(PC1, PC2, fill = condition), shape = 21, size = 2, alpha = 0.5) + 
+  scale_fill_brewer(palette = "Set1") 
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_old.pdf", PC12.old,
+       width = 4, height = 4)
+```
+
+# Plot marker genes for these cells
+
+```{r marker-genes}
+for.heatmap <- norm[marker$Ensembl.ID,]
+for.heatmap <- for.heatmap[,order(colnames(for.heatmap))]
+
+# Exclude lowly expressed genes
+for.heatmap <- for.heatmap[rowMeans(for.heatmap) > 10,]
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/Heatmap.pdf",
+    width = 10, height = 15)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE,
+         labels_row = marker$Gene..MGI.Symbol., show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))))
+dev.off()
+
+```
+
