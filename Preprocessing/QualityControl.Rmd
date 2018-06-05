@@ -19,7 +19,7 @@ This script performs basic filtering steps for quality control and visualizes ma
 # Read in the data
 
 ```{r read-data, message=FALSE}
-library(DESeq2)
+library(edgeR)
 library(openxlsx)
 library(ggplot2)
 library(pheatmap)
@@ -133,15 +133,12 @@ write.table(data.all, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Ana
 # Normalization
 
 ```{r}
-# Use DESeq2 for normalisation
-dds <- DESeqDataSetFromMatrix(countData = data.all, 
-                              colData = data.frame(row.names = rownames(Master.QC),
-                                                   groups = Master.QC$Condition),
-                              design = ~ groups)
+# Use edgeR for normalisation
+y <- DGEList(counts=data.all,
+             group=Master.QC$Condition)
+y <- calcNormFactors(y)
 
-dds <- DESeq2::estimateSizeFactors(dds)
-
-norm <- counts(dds, normalized = TRUE)
+norm <- cpm(y)
 
 write.table(norm, "/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t")
 ```
