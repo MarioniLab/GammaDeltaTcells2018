@@ -634,6 +634,48 @@ for(i in as.character(unique(annot.df$chain))){
 }
 ```
 
+### Visualize emergent motive
+
+```{r, fig.width=12, fig.height=3}
+library(ggseqlogo)
+
+# Vd2
+cur_chain <- cur_mat[rownames(annot.df)[annot.df$chain == "Vd2"],]
+
+# Select the clones with high enrichment in old
+cur_chain <- cur_chain[apply(cur_chain[,grepl("old", colnames(cur_chain))], 1,
+                             function(n){max(n) > 0.05}),]
+
+# Select peptide motive
+motives <- sub(".+, ", "", rownames(cur_chain))
+
+# Sort by length
+all.motives <- list()
+for(i in unique(nchar(motives))){
+  all.motives[[as.character(i)]] <- motives[nchar(motives) == i]
+}
+
+ggseqlogo(all.motives,  method = 'prob')
+
+# Vd5
+cur_chain <- cur_mat[rownames(annot.df)[annot.df$chain == "Vd5"],]
+
+# Select the clones with high enrichment in old
+cur_chain <- cur_chain[apply(cur_chain[,grepl("young", colnames(cur_chain))], 1,
+                             function(n){max(n) > 0.05}),]
+
+# Select peptide motive
+motives <- sub(".+, ", "", rownames(cur_chain))
+
+# Sort by length
+all.motives <- list()
+for(i in unique(nchar(motives))){
+  all.motives[[as.character(i)]] <- motives[nchar(motives) == i]
+}
+
+ggseqlogo(all.motives,  method = 'prob')
+```
+
 ## Visuailze Vg6 cells
 
 ```{r}
