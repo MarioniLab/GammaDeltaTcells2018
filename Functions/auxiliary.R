@@ -244,7 +244,7 @@ shared_clones <- function(files, in.names, all.reads = FALSE, subsample = NULL,
 
 #### Clonal diversity analysis
 clone_diversity <- function(files, in.names, all.reads = FALSE, 
-                            subsample = NULL, select = NULL){
+                            subsample = FALSE, select = NULL){
   cur_files <- lapply(as.list(files), function(n){
     read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   })
@@ -267,6 +267,25 @@ clone_diversity <- function(files, in.names, all.reads = FALSE,
   rownames(mat) <- c("Highly expanded: > 2%", "Expanded: 1% - 1.99%",
                      "Frequent: 0.5% - 0.99", "Infrequent: < 0.5%",
                      "Singletons")
+  
+  # Subsample to the number of reads coming from the smallest library
+  if(subsample){
+    all.sizes <- sapply(cur_files, function(n){sum(n$cloneCount)})
+    # Subsampling
+    for(i in 1:length(cur_files)){
+      cur_count <- cur_files[[i]]$cloneCount
+      cur_clone <- cur_files[[i]]$clonalSequence
+      all_clones <- rep(cur_clone, cur_count)
+      set.seed(1234)
+      new_clones <- all_clones[sample(1:length(all_clones), min(all.sizes))]
+      new_n <- data.frame(cloneCount = as.numeric(table(new_clones)),
+                          clonalSequence = names(table(new_clones)),
+                          cloneFraction = as.numeric(table(new_clones)/
+                                                       sum(as.numeric(table(new_clones)))))
+      new_n <- new_n[order(new_n$cloneCount, decreasing = TRUE),]
+      cur_files[[i]] <- new_n
+    }
+  }
   
   if(all.reads){
     mat["Singletons",] <- unlist(lapply(cur_files, function(n){
@@ -308,7 +327,7 @@ clone_diversity <- function(files, in.names, all.reads = FALSE,
 #### Inverse Simpsons index
 
 inv.Simps <- function(files, in.names, 
-                      subsample = NULL, select = NULL){
+                      subsample = FALSE, select = NULL){
   cur_files <- lapply(as.list(files), function(n){
     read.table(n, sep = "\t", header = TRUE, stringsAsFactors = FALSE)
   })
@@ -318,6 +337,25 @@ inv.Simps <- function(files, in.names,
     cur_files <- lapply(cur_files, function(n){
       n[grepl(select, n$allVHitsWithScore),]
     })
+  }
+  
+  # Subsample to the number of reads coming from the smallest library
+  if(subsample){
+    all.sizes <- sapply(cur_files, function(n){sum(n$cloneCount)})
+    # Subsampling
+    for(i in 1:length(cur_files)){
+      cur_count <- cur_files[[i]]$cloneCount
+      cur_clone <- cur_files[[i]]$clonalSequence
+      all_clones <- rep(cur_clone, cur_count)
+      set.seed(1234)
+      new_clones <- all_clones[sample(1:length(all_clones), min(all.sizes))]
+      new_n <- data.frame(cloneCount = as.numeric(table(new_clones)),
+                          clonalSequence = names(table(new_clones)),
+                          cloneFraction = as.numeric(table(new_clones)/
+                                                       sum(as.numeric(table(new_clones)))))
+      new_n <- new_n[order(new_n$cloneCount, decreasing = TRUE),]
+      cur_files[[i]] <- new_n
+    }
   }
   
   mat <- sapply(cur_files, function(n){inverse.simpson(n$cloneCount)})
