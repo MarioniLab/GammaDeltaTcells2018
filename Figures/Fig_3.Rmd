@@ -19,6 +19,7 @@ library(cowplot)
 library(edgeR)
 library(pheatmap)
 library(viridis)
+library(openxlsx)
 ```
 
 ```{r data}
@@ -32,6 +33,11 @@ norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analys
 marker <- read.csv("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/Genelist.csv", stringsAsFactors = FALSE)
 marker <- marker[marker[,1] != '',]
 marker <- marker[grepl("ENS", marker$Ensembl.ID),]
+rownames(marker) <- marker$Ensembl.ID
+
+# Read in genenames
+names <- read.table("../../../Dropbox (Cambridge University)/SST_spermatocytes/Analysis/data/Genenames.txt", sep = "\t")
+rownames(names) <- names$V1
 ```
 
 # Plot PCA of libraries
@@ -61,16 +67,21 @@ ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_
 # Plot marker genes for these cells
 
 ```{r marker-genes}
-for.heatmap <- norm[marker$Ensembl.ID,]
-for.heatmap <- for.heatmap[,order(colnames(for.heatmap))]
+for.heatmap <- norm[,order(colnames(norm))]
 
-# Exclude lowly expressed genes
-for.heatmap <- for.heatmap[rowMeans(for.heatmap) > 10,]
+# Select genes of interest
+genes <- c("Sell", "Ccr7", "Cxcr3", "Ptprc", "Cd27", "Ccl5", "Il2rb", "Relb", 
+           "Id2", "Id3", "Tbx21", "Eomes", "Cd44", "Il7r", "Il1r1", "Il23r",
+           "Cd163l1", "Ccr2", "Ccr6", "Blk", "Rorc", "Sox13", "Maf",
+           "Lingo4", "Zbtb7b", "Tcf7", "Itk", "Bcl11b")
+for.heatmap <- for.heatmap[rownames(names)[match(genes, names$V2)],]
+
 pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/Heatmap.pdf",
     width = 10, height = 15)
 pheatmap(log10(for.heatmap + 1), 
-         cluster_cols = FALSE,
-         labels_row = marker$Gene..MGI.Symbol., show_colnames = FALSE,
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = genes, 
+         show_colnames = FALSE,
          cellheight = 8, fontsize = 7, color = viridis(100),
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))))
@@ -82,6 +93,8 @@ dev.off()
 ## Vg1
 
 ```{r DE}
+# Save genes in list
+cur_list <- list()
 cur_data <- raw[,grepl("Vg1", colnames(raw))]
 
 # Remove lowly expressed genes
@@ -112,6 +125,12 @@ p.Vg1 <- ggplot(data.frame(logFC = cur_res_all$logFC,
   geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
   ggtitle("Vg1")
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in old", 
+                                     "Up in young")
+cur_list[["Vg1 Th1"]] <- cur_res_all
 ```
 
 
@@ -148,6 +167,12 @@ p.Vg4_Th1 <- ggplot(data.frame(logFC = cur_res_all$logFC,
   geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
   ggtitle("Vg4 Th1")
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in old", 
+                                     "Up in young")
+cur_list[["Vg4 Th1"]] <- cur_res_all
 ```
 
 ## Vg4 Th17
@@ -183,6 +208,12 @@ p.Vg4_Th17 <- ggplot(data.frame(logFC = cur_res_all$logFC,
   geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
   ggtitle("Vg4 Th17")
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in old", 
+                                     "Up in young")
+cur_list[["Vg4 Th17"]] <- cur_res_all
 ```
 
 ## Vg6 Th17
@@ -218,6 +249,15 @@ p.Vg6 <- ggplot(data.frame(logFC = cur_res_all$logFC,
   geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
   ggtitle("Vg6")
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in old", 
+                                     "Up in young")
+cur_list[["Vg6 Th17"]] <- cur_res_all
+
+# Save list
+write.xlsx(cur_list, "../../../Dropbox (Cambridge University)/Gammadelta T cell aging/2_Figures/Tables/Table_S1.xlsx")
 ```
 
 # Save figure
