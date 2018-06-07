@@ -257,7 +257,7 @@ cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in old",
 cur_list[["Vg6 Th17"]] <- cur_res_all
 
 # Save list
-write.xlsx(cur_list, "../../../Dropbox (Cambridge University)/Gammadelta T cell aging/2_Figures/Tables/Table_S1.xlsx")
+write.xlsx(cur_list, "../../../Dropbox (Cambridge University)/Gammadelta T cell aging/2_Figures/Tables/Table_S1_notFinal.xlsx")
 ```
 
 # Save figure
