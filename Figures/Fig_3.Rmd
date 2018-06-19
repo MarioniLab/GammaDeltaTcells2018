@@ -40,30 +40,6 @@ names <- read.table("../../../Dropbox (Cambridge University)/SST_spermatocytes/A
 rownames(names) <- names$V1
 ```
 
-# Plot PCA of libraries
-
-```{r pca}
-pca <- prcomp(t(log10(norm + 1)))
-
-# Only the young libraries
-PC12.young <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(norm)[!grepl("old", colnames(norm))]),
-                  PC1 = pca$x[!grepl("old", colnames(norm)),1],
-                  PC2 = pca$x[!grepl("old", colnames(norm)),2])) +
-  geom_point(aes(PC1, PC2, fill = condition), shape = 21, size = 2) + 
-  scale_fill_brewer(palette = "Set1") + guides(fill = FALSE)
-ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_young.pdf", PC12.young,
-       width = 4, height = 4)
-
-# Now only the old
-PC12.old <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(norm)[grepl("old", colnames(norm))]),
-                  PC1 = pca$x[grepl("old", colnames(norm)),1],
-                  PC2 = pca$x[grepl("old", colnames(norm)),2])) +
-  geom_point(aes(PC1, PC2, fill = condition), shape = 21, size = 2, alpha = 0.5) + 
-  scale_fill_brewer(palette = "Set1") 
-ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_old.pdf", PC12.old,
-       width = 4, height = 4)
-```
-
 # Plot marker genes for these cells
 
 ```{r marker-genes}
@@ -86,6 +62,30 @@ pheatmap(log10(for.heatmap + 1),
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))))
 dev.off()
+```
+
+# Plot PCA of libraries
+
+```{r pca}
+pca <- prcomp(t(log10(norm + 1)))
+
+# Only the young libraries
+PC12.young <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(norm)[!grepl("old", colnames(norm))]),
+                  PC1 = pca$x[!grepl("old", colnames(norm)),1],
+                  PC2 = pca$x[!grepl("old", colnames(norm)),2])) +
+  geom_point(aes(PC1, PC2, fill = condition), shape = 21, size = 2) + 
+  scale_fill_brewer(palette = "Set1") + guides(fill = FALSE)
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_young.pdf", PC12.young,
+       width = 4, height = 4)
+
+# Now only the old
+PC12.old <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(norm)[grepl("old", colnames(norm))]),
+                  PC1 = pca$x[grepl("old", colnames(norm)),1],
+                  PC2 = pca$x[grepl("old", colnames(norm)),2])) +
+  geom_point(aes(PC1, PC2, fill = condition), shape = 21, size = 2, alpha = 0.5) + 
+  scale_fill_brewer(palette = "Set1") 
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_old.pdf", PC12.old,
+       width = 4, height = 4)
 ```
 
 # Differential expression analysis
