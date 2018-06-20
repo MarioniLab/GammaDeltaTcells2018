@@ -132,14 +132,20 @@ qlf <- glmQLFTest(fit,coef=2,
 cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
 
 # Visualize results
-p.Vg1 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+cur_data <- data.frame(logFC = cur_res_all$logFC,
                   mean = cur_res_all$logCPM,
                   results = ifelse(cur_res_all$logFC > 0 & 
                                      cur_res_all$FDR < 0.1, "Old",
                                    ifelse(cur_res_all$logFC < 0 & 
-                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
-  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")),
+                  genenames = names[rownames(cur_res_all),2])
+
+p.Vg1 <- ggplot(cur_data) +
+  geom_point(aes(mean, logFC, colour = results, size = results)) + 
+  geom_label(data = cur_data[cur_data$results != "Not DE",],
+             aes(mean, logFC, label = genenames), hjust = 0, nudge_x = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  scale_size_manual(values = c(0.5, 2, 2)) + ylim(c(-6,6)) + 
   ggtitle("Vg1")
 
 cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
@@ -174,14 +180,20 @@ qlf <- glmQLFTest(fit,coef=2,
 cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
 
 # Visualize results
-p.Vg4_Th1 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+cur_data <- data.frame(logFC = cur_res_all$logFC,
                   mean = cur_res_all$logCPM,
                   results = ifelse(cur_res_all$logFC > 0 & 
                                      cur_res_all$FDR < 0.1, "Old",
                                    ifelse(cur_res_all$logFC < 0 & 
-                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
-  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")),
+                  genenames = names[rownames(cur_res_all),2])
+
+p.Vg4_Th1 <- ggplot(cur_data) +
+  geom_point(aes(mean, logFC, colour = results, size = results)) + 
+  geom_label(data = cur_data[cur_data$results != "Not DE",],
+             aes(mean, logFC, label = genenames), hjust = 0, nudge_x = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  scale_size_manual(values = c(0.5, 2, 2)) + ylim(c(-6,6)) + 
   ggtitle("Vg4 Th1")
 
 cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
@@ -215,14 +227,20 @@ qlf <- glmQLFTest(fit,coef=2,
 cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
 
 # Visualize results
-p.Vg4_Th17 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+cur_data <- data.frame(logFC = cur_res_all$logFC,
                   mean = cur_res_all$logCPM,
                   results = ifelse(cur_res_all$logFC > 0 & 
                                      cur_res_all$FDR < 0.1, "Old",
                                    ifelse(cur_res_all$logFC < 0 & 
-                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
-  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")),
+                  genenames = names[rownames(cur_res_all),2])
+
+p.Vg4_Th17 <- ggplot(cur_data) +
+  geom_point(aes(mean, logFC, colour = results, size = results)) + 
+  geom_label(data = cur_data[cur_data$results != "Not DE",],
+             aes(mean, logFC, label = genenames), hjust = 0, nudge_x = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  scale_size_manual(values = c(0.5, 2, 2)) + ylim(c(-6,6)) + 
   ggtitle("Vg4 Th17")
 
 cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
@@ -256,14 +274,20 @@ qlf <- glmQLFTest(fit,coef=2,
 cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
 
 # Visualize results
-p.Vg6 <- ggplot(data.frame(logFC = cur_res_all$logFC,
+cur_data <- data.frame(logFC = cur_res_all$logFC,
                   mean = cur_res_all$logCPM,
                   results = ifelse(cur_res_all$logFC > 0 & 
                                      cur_res_all$FDR < 0.1, "Old",
                                    ifelse(cur_res_all$logFC < 0 & 
-                                     cur_res_all$FDR < 0.1, "Young", "Not DE")))) +
-  geom_point(aes(mean, logFC, colour = results), size = 0.5) + 
+                                     cur_res_all$FDR < 0.1, "Young", "Not DE")),
+                  genenames = names[rownames(cur_res_all),2])
+
+p.Vg6 <- ggplot(cur_data) +
+  geom_point(aes(mean, logFC, colour = results, size = results)) + 
+  geom_label(data = cur_data[cur_data$results != "Not DE",],
+             aes(mean, logFC, label = genenames), hjust = 0, nudge_x = 0.5) + 
   scale_color_manual(values = c("grey", "dark red", "dark blue")) +
+  scale_size_manual(values = c(0.5, 2, 2)) + ylim(c(-6,6)) + 
   ggtitle("Vg6")
 
 cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
