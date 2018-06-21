@@ -414,6 +414,86 @@ stats.out[!is.na(stats.out[,1]),2] <- p.adjust(stats.out[!is.na(stats.out[,1]),1
 stats.out
 ```
 
+# Clonal expansion
+
+```{r}
+# Select top 10 clones in old and young for each Vg4 Th17 library 
+Vg4_Th17_old_TRD <- topCDR3(all.files, top = 10, 
+                            keywords = c("Vg4", "old", "TRD", "Th17-"),
+                            annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+Vg4_Th17_young_TRD <- topCDR3(all.files, top = 10, 
+                            keywords = c("Vg4", "young", "TRD", "Th17-"),
+                            annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Visualize clones
+# Merge clones
+cur_clones <- data.frame(na = unique(c(Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na)),
+                         aa = c(Vg4_Th17_old_TRD$aa,
+                                Vg4_Th17_young_TRD$aa)[
+                           match(unique(c(Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na)),
+                                 c(Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na))
+                         ],
+                         chain = c(Vg4_Th17_old_TRD$chain,
+                                Vg4_Th17_young_TRD$chain)[
+                           match(unique(c(Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na)),
+                                 c(Vg4_Th17_old_TRD$na,
+                                       Vg4_Th17_young_TRD$na))
+                         ])
+rownames(cur_clones) <- cur_clones$na
+
+c.names <- c(paste("Vg4_Th17-_young_TRD_X", 
+                   1:sum(grepl("Vg4_Th17-young", TRD.files)), 
+                   sep =  "_"),
+             paste("Vg4_Th17-_old_TRD_X", 
+                   1:sum(grepl("Vg4_Th17-old", TRD.files)), 
+                   sep =  "_"))
+cur_mat <- matrix(data = NA, ncol = length(c.names), 
+              nrow = nrow(cur_clones))
+colnames(cur_mat) <- c.names
+rownames(cur_mat) <- cur_clones$na
+
+for(i in c.names){
+  cur_mat[,i] <- clones.fraction(all.files, i, cur_clones$na)
+}
+cur_mat <- cur_mat[order(rowMeans(cur_mat), decreasing = TRUE),]
+rownames(cur_mat) <- paste(cur_clones[rownames(cur_mat),"na"],
+                           cur_clones[rownames(cur_mat),"aa"], sep = ", ")
+
+# Generate annotation data.frame
+annot.df <- data.frame(row.names = rownames(cur_mat),
+                       chain = cur_clones[sub(", [A-Z]*$", "", 
+                                              rownames(cur_mat)),
+                                          "chain"])
+
+# Select most enriched clones > 5%
+cur_mat.vis <- cur_mat[apply(cur_mat, 1, max) > 0.05,]
+cur_mat.vis <- cur_mat.vis[order(annot.df[rownames(cur_mat.vis),"chain"],
+                                 rowMeans(cur_mat.vis)),]
+cur_mat.vis <- cur_mat.vis[annot.df[rownames(cur_mat.vis),"chain"] == "Vd2" |
+                             annot.df[rownames(cur_mat.vis),"chain"] == "Vd5",]
+
+
+# Visualize in form of heatmap
+pdf("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Figures/Figure_4/Heatmap.pdf", 
+    onefile = FALSE, width = 25, height = 10)
+print(pheatmap(cur_mat.vis, 
+         color = c("white", colorRampPalette(c("grey", "blue", "dark red"))(9999)),
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         breaks = seq(0, max(cur_mat), length.out = 10000), 
+         fontsize = 8,
+         annotation_row = annot.df,
+         gaps_row = c(10), gaps_col = c(6), 
+         border_color = "black", cellwidth = 20, cellheight = 20, 
+         display_numbers = TRUE, fontsize_number = 8, number_color = "black"))
+dev.off()
+```
+
 
 # Save figure
 
