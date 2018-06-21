@@ -1,0 +1,49 @@
+---
+title: "Figure 3"
+author: "Nils Eling"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Read in data and libraries
+
+```{r libraries, message=FALSE}
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(cowplot)
+library(pheatmap)
+library(openxlsx)
+source("../../Functions/auxiliary.R")
+
+# Read in mixcr mapping results - one chain per .txt file
+all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
+
+# Read in normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
+libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
+
+# Remove low quality libraries
+all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
+
+# All files containing TRG
+TRG.files <- all.files[grepl("TRG", all.files)]
+TRD.files <- all.files[grepl("TRD", all.files)]
+```
+
+
+
+# Save figure
+
+```{r}
+final <- plot_grid(p.Vg1, p.Vg4_Th1, p.Vg4_Th17, p.Vg6, nrow = 1)
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/DE.pdf", final,
+       width = 20, height = 4)
+```
