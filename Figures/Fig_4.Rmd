@@ -21,6 +21,7 @@ library(ggplot2)
 library(cowplot)
 library(pheatmap)
 library(openxlsx)
+library(readxl)
 source("../Functions/auxiliary.R")
 
 # Read in mixcr mapping results - one chain per .txt file
@@ -36,6 +37,13 @@ all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.c
 # All files containing TRG
 TRG.files <- all.files[grepl("TRG", all.files)]
 TRD.files <- all.files[grepl("TRD", all.files)]
+
+# Since the annotation of delta chains is not very consistent, 
+# we manually re-annotated the chains
+# Chain annotation
+annot <- as.data.frame(read_xls("../Data/Variable_sequences_to_edit.xls"))
+annot$`IMGT sub-group`[is.na(annot$`IMGT sub-group`)] <- annot$names[is.na(annot$`IMGT sub-group`)]
+rownames(annot) <- annot$names
 ```
 
 # Clone diversity using the inverse simpsons index
@@ -158,7 +166,253 @@ t.test(Vg4.Th17[Vg4.Th17$Age == "young","Inv_Simps"],
 
 # Delta chain usage
 
+## V gamma 1 cells
 
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg1.y <- chain.prop(all.files, keywords = c("Vg1", "young", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg1.y <- Vg1.y[!apply(Vg1.y, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg1.o <- chain.prop(all.files, keywords = c("Vg1", "old", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg1.o <- Vg1.o[!apply(Vg1.o, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg1.y))), melt(as.data.frame(t(Vg1.o))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg1.y)*ncol(Vg1.y)), 
+                 rep("Old", nrow(Vg1.o)*ncol(Vg1.o))), levels = c("Young", "Old"))
+
+# Add addition chains and set value to 0
+non.contained <- paste("Vd", 1:12, sep = "")[is.na(match(paste("Vd", 1:12, sep = ""),
+                                                         unique(df.melt$variable)))]
+
+df.melt <- rbind(df.melt,
+                 data.frame(variable = rep(non.contained, each = 2),
+                            value = rep(0, length(non.contained)*2),
+                            Age = rep(c("Young", "Old"), length(non.contained))))
+
+p.Vg1.delta.usage <- ggplot(df.melt, aes(factor(variable,
+            levels = paste("Vd", 1:12, sep = "")), 
+            value*100, fill = Age)) + 
+  geom_boxplot() + ylim(c(0,100)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction %") + ggtitle("Vg1 delta chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+
+# Statistical testing
+stats.out <- matrix(data = NA, ncol = 2, nrow = length(unique(df.melt$variable)))
+rownames(stats.out) <- unique(df.melt$variable)
+colnames(stats.out) <- c("p.value", "adjusted")
+
+for(i in rownames(stats.out)){
+  if(sum(df.melt$variable == i & df.melt$Age == "Young") > 1 &
+     sum(df.melt$variable == i & df.melt$Age == "Old") > 1){
+    cur_test <- t.test(df.melt$value[df.melt$variable == i & df.melt$Age == "Young"],
+                       df.melt$value[df.melt$variable == i & df.melt$Age == "Old"])
+    stats.out[i,1] <- cur_test$p.value
+  }
+}
+
+# Multiple testing correction
+stats.out[!is.na(stats.out[,1]),2] <- p.adjust(stats.out[!is.na(stats.out[,1]),1],
+                                               method = "BH")
+stats.out
+```
+
+## V gamma 4 cells Th1 primed
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg4.y.Th1 <- chain.prop(all.files, keywords = c("Vg4", "young", "TRD", "Th1-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.y.Th1 <- Vg4.y.Th1[!apply(Vg4.y.Th1, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg4.o.Th1 <- chain.prop(all.files, keywords = c("Vg4", "old", "TRD", "Th1-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.o.Th1 <- Vg4.o.Th1[!apply(Vg4.o.Th1, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg4.y.Th1))), melt(as.data.frame(t(Vg4.o.Th1))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg4.y.Th1)*ncol(Vg4.y.Th1)), 
+                 rep("Old", nrow(Vg4.o.Th1)*ncol(Vg4.o.Th1))), levels = c("Young", "Old"))
+
+# Add addition chains and set value to 0
+non.contained <- paste("Vd", 1:12, sep = "")[is.na(match(paste("Vd", 1:12, sep = ""),
+                                                         unique(df.melt$variable)))]
+
+df.melt <- rbind(df.melt,
+                 data.frame(variable = rep(non.contained, each = 2),
+                            value = rep(0, length(non.contained)*2),
+                            Age = rep(c("Young", "Old"), length(non.contained))))
+
+p.Vg4.Th1.delta.usage <- ggplot(df.melt, aes(factor(variable,
+            levels = paste("Vd", 1:12, sep = "")), 
+            value*100, fill = Age)) + 
+  geom_boxplot() + ylim(c(0,100)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction %") + ggtitle("Vg4 Th1 delta chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+
+# Statistical testing
+stats.out <- matrix(data = NA, ncol = 2, nrow = length(unique(df.melt$variable)))
+rownames(stats.out) <- unique(df.melt$variable)
+colnames(stats.out) <- c("p.value", "adjusted")
+
+for(i in rownames(stats.out)){
+  if(sum(df.melt$variable == i & df.melt$Age == "Young") > 1 &
+     sum(df.melt$variable == i & df.melt$Age == "Old") > 1){
+    cur_test <- t.test(df.melt$value[df.melt$variable == i & df.melt$Age == "Young"],
+                       df.melt$value[df.melt$variable == i & df.melt$Age == "Old"])
+    stats.out[i,1] <- cur_test$p.value
+  }
+}
+
+# Multiple testing correction
+stats.out[!is.na(stats.out[,1]),2] <- p.adjust(stats.out[!is.na(stats.out[,1]),1],
+                                               method = "BH")
+stats.out
+```
+
+## V gamma 4 cells Th17 primed
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg4.y.Th17 <- chain.prop(all.files, keywords = c("Vg4", "young", "TRD", "Th17-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.y.Th17 <- Vg4.y.Th17[!apply(Vg4.y.Th17, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg4.o.Th17 <- chain.prop(all.files, keywords = c("Vg4", "old", "TRD", "Th17-"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg4.o.Th17 <- Vg4.o.Th17[!apply(Vg4.o.Th17, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg4.y.Th17))), melt(as.data.frame(t(Vg4.o.Th17))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg4.y.Th17)*ncol(Vg4.y.Th17)), 
+                 rep("Old", nrow(Vg4.o.Th17)*ncol(Vg4.o.Th17))), levels = c("Young", "Old"))
+
+# Add addition chains and set value to 0
+non.contained <- paste("Vd", 1:12, sep = "")[is.na(match(paste("Vd", 1:12, sep = ""),
+                                                         unique(df.melt$variable)))]
+
+df.melt <- rbind(df.melt,
+                 data.frame(variable = rep(non.contained, each = 2),
+                            value = rep(0, length(non.contained)*2),
+                            Age = rep(c("Young", "Old"), length(non.contained))))
+
+p.Vg4.Th17.delta.usage <- ggplot(df.melt, aes(factor(variable,
+            levels = paste("Vd", 1:12, sep = "")), 
+            value*100, fill = Age)) + 
+  geom_boxplot() + ylim(c(0,100)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction %") + ggtitle("Vg4 Th17 delta chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+
+# Statistical testing
+stats.out <- matrix(data = NA, ncol = 2, nrow = length(unique(df.melt$variable)))
+rownames(stats.out) <- unique(df.melt$variable)
+colnames(stats.out) <- c("p.value", "adjusted")
+
+for(i in rownames(stats.out)){
+  if(sum(df.melt$variable == i & df.melt$Age == "Young") > 1 &
+     sum(df.melt$variable == i & df.melt$Age == "Old") > 1){
+    cur_test <- t.test(df.melt$value[df.melt$variable == i & df.melt$Age == "Young"],
+                       df.melt$value[df.melt$variable == i & df.melt$Age == "Old"])
+    stats.out[i,1] <- cur_test$p.value
+  }
+}
+
+# Multiple testing correction
+stats.out[!is.na(stats.out[,1]),2] <- p.adjust(stats.out[!is.na(stats.out[,1]),1],
+                                               method = "BH")
+stats.out
+```
+
+## V gamma 6 cells
+
+```{r}
+# Select gamma chain file for young V gamma 1 cells
+Vg6.y <- chain.prop(all.files, keywords = c("Vg6", "young", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg6.y <- Vg6.y[!apply(Vg6.y, 1, function(n){all(n < 0.01)}),]
+
+# Select gamma chain file for old V gamma 1 cells
+Vg6.o <- chain.prop(all.files, keywords = c("Vg6", "old", "TRD"),
+                       annotation = data.frame(row.names = rownames(annot),
+                                               annotation = annot[,"IMGT sub-group"]))
+
+# Remove clones that are not detected in with 1% in one of the libraries
+Vg6.o <- Vg6.o[!apply(Vg6.o, 1, function(n){all(n < 0.01)}),]
+
+# Plot results
+df.melt <- rbind(melt(as.data.frame(t(Vg6.y))), melt(as.data.frame(t(Vg6.o))))
+df.melt$Age <- factor(c(rep("Young", nrow(Vg6.y)*ncol(Vg6.y)), 
+                 rep("Old", nrow(Vg6.o)*ncol(Vg6.o))), levels = c("Young", "Old"))
+
+# Add addition chains and set value to 0
+non.contained <- paste("Vd", 1:12, sep = "")[is.na(match(paste("Vd", 1:12, sep = ""),
+                                                         unique(df.melt$variable)))]
+
+df.melt <- rbind(df.melt,
+                 data.frame(variable = rep(non.contained, each = 2),
+                            value = rep(0, length(non.contained)*2),
+                            Age = rep(c("Young", "Old"), length(non.contained))))
+
+p.Vg6.delta.usage <- ggplot(df.melt, aes(factor(variable,
+            levels = paste("Vd", 1:12, sep = "")), 
+            value*100, fill = Age)) + 
+  geom_boxplot() + ylim(c(0,100)) + 
+  theme(axis.title = element_text(size = 12), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  xlab("Gamma chain") + ylab("Chain fraction %") + ggtitle("Vg6 delta chain usage") +
+  scale_fill_manual(values = c("white", "red"))
+
+# Statistical testing
+stats.out <- matrix(data = NA, ncol = 2, nrow = length(unique(df.melt$variable)))
+rownames(stats.out) <- unique(df.melt$variable)
+colnames(stats.out) <- c("p.value", "adjusted")
+
+for(i in rownames(stats.out)){
+  if(sum(df.melt$variable == i & df.melt$Age == "Young") > 1 &
+     sum(df.melt$variable == i & df.melt$Age == "Old") > 1){
+    cur_test <- t.test(df.melt$value[df.melt$variable == i & df.melt$Age == "Young"],
+                       df.melt$value[df.melt$variable == i & df.melt$Age == "Old"])
+    stats.out[i,1] <- cur_test$p.value
+  }
+}
+
+# Multiple testing correction
+stats.out[!is.na(stats.out[,1]),2] <- p.adjust(stats.out[!is.na(stats.out[,1]),1],
+                                               method = "BH")
+stats.out
+```
 
 
 # Save figure
