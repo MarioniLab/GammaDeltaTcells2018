@@ -494,11 +494,28 @@ print(pheatmap(cur_mat.vis,
 dev.off()
 ```
 
+# Dot plot of D5 clone
+
+```{r}
+cur_size <- melt(tail(cur_mat.vis, 1))
+cur_size$Age <- factor(c(rep("Young", 6), rep("Old", 4)),
+                       levels = c("Young", "Old"))
+
+p.clone <- ggplot(cur_size) + 
+  geom_boxplot(aes(Age, value*100, fill = Age), width = 0.5) + 
+  geom_jitter(aes(Age, value*100, fill = Age), shape = 21, size = 5, width = 0.1) +
+  scale_fill_manual(values = c("white", "red")) +
+  ylim(c(0,30)) + ylab("Clone fraction [%]")
+
+t.test(cur_size$value[cur_size$Age == "Old"],
+       cur_size$value[cur_size$Age == "Young"])
+```
+
 
 # Save figure
 
 ```{r}
-final <- plot_grid(p.Vg1, p.Vg4_Th1, p.Vg4_Th17, p.Vg6, nrow = 1)
+final <- plot_grid(p.Vg1, p.Vg4_Th1, p.Vg4_Th17, p.Vg6)
 ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/DE.pdf", final,
        width = 20, height = 4)
 ```
