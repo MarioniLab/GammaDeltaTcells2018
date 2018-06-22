@@ -515,7 +515,15 @@ t.test(cur_size$value[cur_size$Age == "Old"],
 # Save figure
 
 ```{r}
-final <- plot_grid(p.Vg1, p.Vg4_Th1, p.Vg4_Th17, p.Vg6)
-ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/DE.pdf", final,
-       width = 20, height = 4)
+final.1 <- plot_grid(p.Vg4.Th1.gamma, p.Vg4.Th17.gamma, 
+                     p.Vg4.Th1.delta, p.Vg4.Th17.delta, nrow = 1)
+final.2 <- plot_grid(p.Vg1.delta.usage, p.Vg4.Th1.delta.usage,
+                     p.Vg4.Th17.delta.usage, p.Vg6.delta.usage, ncol = 2,
+                     nrow = 2)
+final.3 <- plot_grid(p.clone, NULL, NULL, NULL, nrow = 1)
+
+final <- plot_grid(final.1, final.2, final.3, ncol = 1, rel_heights = c(1,2,1))
+
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_4/Fig_4.pdf", final,
+       width = 12, height = 15)
 ```
