@@ -158,7 +158,7 @@ Vg4.Th17$Replicate <- c(1:4, 1:6)
 
 # Plot results
 p.Vg4.Th17.delta <- ggplot(Vg4.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red"))
+  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red"))
 # Statistical test
 t.test(Vg4.Th17[Vg4.Th17$Age == "young","Inv_Simps"],
        Vg4.Th17[Vg4.Th17$Age == "old","Inv_Simps"])
