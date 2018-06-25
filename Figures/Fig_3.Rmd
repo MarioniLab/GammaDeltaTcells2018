@@ -101,7 +101,8 @@ PC12.old.wGuides <- ggplot(data.frame(condition = sub("_DO.+$", "", colnames(nor
 ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/PCA_old_withGuides.pdf", PC12.old.wGuides,
        width = 4, height = 4)
 
-
+# Save pca
+write.xlsx(data.frame(names = sub("_DO.+$", "", colnames(norm)), pca$x), "../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/pca.xlsx")
 ```
 
 # Differential expression analysis
