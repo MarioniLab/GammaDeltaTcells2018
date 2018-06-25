@@ -79,9 +79,9 @@ ggplot(Master.QC) + geom_point(aes(x = Exonic/Total, y = log10(NoCells), colour 
 
 # Percent of exonic reads vs percent of ERCC
 ggplot(Master.QC) + geom_point(aes(x = Exonic/Total, y = ERCC/Total, colour = Condition))
-meta[Master.QC$Exonic/Master.QC$Total < 0.225,]
-meta <- meta[Master.QC$Exonic/Master.QC$Total > 0.225,]
-Master.QC <- Master.QC[Master.QC$Exonic/Master.QC$Total > 0.225,]
+meta[Master.QC$Exonic/Master.QC$Total < 0.4,]
+meta <- meta[Master.QC$Exonic/Master.QC$Total > 0.4,]
+Master.QC <- Master.QC[Master.QC$Exonic/Master.QC$Total > 0.4,]
 
 # Number of cells captured vs total reads
 ggplot(Master.QC) + geom_point(aes(x = log10(Total), y = log10(NoCells), colour = Condition))
