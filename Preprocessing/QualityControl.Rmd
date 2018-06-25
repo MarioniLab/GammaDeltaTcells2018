@@ -160,11 +160,11 @@ PC1 splits Th1 and Th17, PC2 splits the receptor subclasses.
 
 ```{r, fig.height=15, fig.width = 8}
 # Visualize marker genes
-pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE, 
-         labels_row = marker$Gene..MGI.Symbol., show_colnames = FALSE,
-         cellheight = 8, fontsize = 8, color = viridis(100),
-         annotation_col = data.frame(row.names = colnames(norm),
-                                     condition = Master.QC$Condition))
+#pheatmap(log10(norm[marker$Ensembl.ID,] + 1), cluster_rows = FALSE, 
+#         labels_row = marker$Gene..MGI.Symbol., show_colnames = FALSE,
+#         cellheight = 8, fontsize = 8, color = viridis(100),
+#         annotation_col = data.frame(row.names = colnames(norm),
+#                                     condition = Master.QC$Condition))
 
 ```
 
