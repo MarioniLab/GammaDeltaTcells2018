@@ -1,0 +1,321 @@
+---
+title: "Heatmaps visualizing marker genes"
+author: "Nils Eling"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Read in data and libraries
+
+```{r libraries, message=FALSE}
+library(cowplot)
+library(edgeR)
+library(pheatmap)
+library(viridis)
+library(openxlsx)
+```
+
+```{r data}
+# Normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t")
+
+# Read in genenames
+names <- read.table("../../../Dropbox (Cambridge University)/SST_spermatocytes/Analysis/data/Genenames.txt", sep = "\t", header = TRUE)
+rownames(names) <- names$Ensembl.Gene.ID
+
+# Read in differential expression results
+Th1 <- read.xlsx("../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes_new/Th1 vs Th17.xlsx", sheet = 1)
+Th17 <- read.xlsx("../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes_new/Th1 vs Th17.xlsx", sheet = 2)
+```
+
+# KLRs
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+KLRs <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 1, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+KLRs$X1[KLRs$X3 != "Up in gd17" & !(KLRs$X1 %in% Th1$Genename)]
+KLRs$X1[KLRs$X3 != "Up in gd1" & !(KLRs$X1 %in% Th17$Genename)]
+
+for.heatmap.1 <- for.heatmap[KLRs$X2[KLRs$X1 %in% Th1$Genename],]
+for.heatmap.2 <- for.heatmap[KLRs$X2[KLRs$X1 %in% Th17$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+for.heatmap.2 <- for.heatmap.2[order(Th17[match(rownames(for.heatmap.2),
+                                               Th17$GeneID),"logFC"], 
+                                     decreasing = TRUE),]
+for.heatmap <- rbind(for.heatmap.1, for.heatmap.2)
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/KLRs.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+                                           regulation = KLRs[match(rownames(for.heatmap),
+                                                                   KLRs$X2),
+                                                             "X3"]))
+dev.off()
+```
+
+# Cytotoxicity
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+Cytotoxicity <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 2, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+Cytotoxicity$X1[Cytotoxicity$X3 != "Up in gd17" & !(Cytotoxicity$X1 %in% Th1$Genename)]
+
+for.heatmap.1 <- for.heatmap[Cytotoxicity$X2[Cytotoxicity$X1 %in% Th1$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Cytotoxicity.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap.1 + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap.1),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap.1),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap.1))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap.1),
+                                           regulation = Cytotoxicity[
+                                             match(rownames(for.heatmap.1),
+                                            Cytotoxicity$X2),
+                                                             "X3"]))
+dev.off()
+```
+
+# FcRs
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+FcRs <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 3, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+FcRs$X1[FcRs$X3 != "Up in gd17" & !(FcRs$X1 %in% Th1$Genename)]
+
+for.heatmap.1 <- for.heatmap[FcRs$X2[FcRs$X1 %in% Th1$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/FcRs.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap.1 + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap.1),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap.1),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap.1))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap.1),
+                                           regulation = FcRs[
+                                             match(rownames(for.heatmap.1),
+                                            FcRs$X2),
+                                                             "X3"]))
+dev.off()
+```
+
+# Markers
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+Markers <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 4, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+Markers$X1[Markers$X3 != "Up in gd17" & !(Markers$X1 %in% Th1$Genename)]
+Markers$X1[Markers$X3 != "Up in gd1" & !(Markers$X1 %in% Th17$Genename)]
+
+for.heatmap.1 <- for.heatmap[Markers$X2[Markers$X3 == "Up in gd1" &
+                                          Markers$X1 %in% Th1$Genename],]
+for.heatmap.2 <- for.heatmap[Markers$X2[Markers$X3 == "Up in gd17" &
+                                          Markers$X1 %in% Th17$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+for.heatmap.2 <- for.heatmap.2[order(Th17[match(rownames(for.heatmap.2),
+                                               Th17$GeneID),"logFC"], 
+                                     decreasing = TRUE),]
+for.heatmap <- rbind(for.heatmap.1, for.heatmap.2)
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Markers.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+                                           regulation = Markers[match(rownames(for.heatmap),
+                                                                   Markers$X2),
+                                                             "X3"]))
+dev.off()
+```
+
+# Chemokines
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+Chemokines <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 5, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+Chemokines$X1[Chemokines$X3 != "Up in gd17" & !(Chemokines$X1 %in% Th1$Genename)]
+Chemokines$X1[Chemokines$X3 != "Up in gd1" & !(Chemokines$X1 %in% Th17$Genename)]
+
+for.heatmap.1 <- for.heatmap[Chemokines$X2[Chemokines$X3 == "Up in gd1" &
+                                          Chemokines$X1 %in% Th1$Genename],]
+for.heatmap.2 <- for.heatmap[Chemokines$X2[Chemokines$X3 == "Up in gd17" &
+                                          Chemokines$X1 %in% Th17$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+for.heatmap.2 <- for.heatmap.2[order(Th17[match(rownames(for.heatmap.2),
+                                               Th17$GeneID),"logFC"], 
+                                     decreasing = TRUE),]
+for.heatmap <- rbind(for.heatmap.1, for.heatmap.2)
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Chemokines.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+                                           regulation = Chemokines[match(rownames(for.heatmap),
+                                                                   Chemokines$X2),
+                                                             "X3"]))
+dev.off()
+```
+
+# Cytokines
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+Cytokines <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 6, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+Cytokines$X1[Cytokines$X3 != "Up in gd17" & !(Cytokines$X1 %in% Th1$Genename)]
+Cytokines$X1[Cytokines$X3 != "Up in gd1" & !(Cytokines$X1 %in% Th17$Genename)]
+
+for.heatmap.1 <- for.heatmap[Cytokines$X2[Cytokines$X3 == "Up in gd1" &
+                                          Cytokines$X1 %in% Th1$Genename],]
+for.heatmap.2 <- for.heatmap[Cytokines$X2[Cytokines$X3 == "Up in gd17" &
+                                          Cytokines$X1 %in% Th17$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+for.heatmap.2 <- for.heatmap.2[order(Th17[match(rownames(for.heatmap.2),
+                                               Th17$GeneID),"logFC"], 
+                                     decreasing = TRUE),]
+for.heatmap <- rbind(for.heatmap.1, for.heatmap.2)
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Cytokines.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+                                           regulation = Cytokines[match(rownames(for.heatmap),
+                                                                   Cytokines$X2),
+                                                             "X3"]))
+dev.off()
+```
+
+# TFs
+
+```{r marker-genes}
+for.heatmap <- norm[,order(colnames(norm))]
+
+# Select genes of interest
+TFs <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 7, colNames = FALSE)
+
+# Test if this list contains differenitally expressed genes
+TFs$X1[TFs$X3 != "Up in gd17" & !(TFs$X1 %in% Th1$Genename)]
+TFs$X1[TFs$X3 != "Up in gd1" & !(TFs$X1 %in% Th17$Genename)]
+
+for.heatmap.1 <- for.heatmap[TFs$X2[TFs$X3 == "Up in gd1" &
+                                          TFs$X1 %in% Th1$Genename],]
+for.heatmap.2 <- for.heatmap[TFs$X2[TFs$X3 == "Up in gd17" &
+                                          TFs$X1 %in% Th17$Genename],]
+
+# Order based on logFC
+for.heatmap.1 <- for.heatmap.1[order(Th1[match(rownames(for.heatmap.1),
+                                               Th1$GeneID),"logFC"], 
+                                     decreasing = FALSE),]
+for.heatmap.2 <- for.heatmap.2[order(Th17[match(rownames(for.heatmap.2),
+                                               Th17$GeneID),"logFC"], 
+                                     decreasing = TRUE),]
+for.heatmap <- rbind(for.heatmap.1, for.heatmap.2)
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/TFs.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+                                           regulation = TFs[match(rownames(for.heatmap),
+                                                                   TFs$X2),
+                                                             "X3"]))
+dev.off()
+```
