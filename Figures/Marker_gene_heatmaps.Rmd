@@ -38,8 +38,9 @@ Th17 <- read.xlsx("../../../Dropbox (Cambridge University)/GammaDelta/Analysis/R
 breaksList <- seq(0, 4.5, length.out = 100)
 breaksList.scaled <- seq(-3, 3, length.out = 100)
 
-colour.scaled <- colorRampPalette(c("#4393c3", "white", 
-                                    "#d6604d"))(length(breaksList.scaled))
+colour.scaled <- colorRampPalette(colors = c("#2166ac", "#4393c3", "#92c5de", "#d1e5f0",
+                                    "white", "#fddbc7", "#f4a582", "#d6604d",
+                                    "#b2182b"))(length(breaksList.scaled))
 colour.exp <- viridis(length(breaksList))
 ```
 
