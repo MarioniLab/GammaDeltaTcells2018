@@ -46,7 +46,8 @@ colour.exp <- viridis(length(breaksList))
 # KLRs
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+cnames <- colnames(norm)
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 KLRs <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 1, colNames = FALSE)
@@ -102,7 +103,7 @@ dev.off()
 # Cytotoxicity
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 Cytotoxicity <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 2, colNames = FALSE)
@@ -155,7 +156,7 @@ dev.off()
 # FcRs
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 FcRs <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 3, colNames = FALSE)
@@ -208,7 +209,7 @@ dev.off()
 # Markers
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 Markers <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 4, colNames = FALSE)
@@ -268,7 +269,7 @@ dev.off()
 # Chemokines
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 Chemokines <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 5, colNames = FALSE)
@@ -328,7 +329,7 @@ dev.off()
 # Cytokines
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 Cytokines <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 6, colNames = FALSE)
@@ -388,7 +389,7 @@ dev.off()
 # TFs
 
 ```{r marker-genes}
-for.heatmap <- norm[,order(colnames(norm))]
+for.heatmap <- norm[,order(sapply(cnames, function(n){unlist(strsplit(n, "_"))[1]}), sapply(cnames, function(n){unlist(strsplit(n, "_"))[2]}), -xtfrm(sapply(cnames, function(n){unlist(strsplit(n, "_"))[3]})))]
 
 # Select genes of interest
 TFs <- read.xlsx("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/gene_list_for_heatmaps.xlsx", sheet = 7, colNames = FALSE)
