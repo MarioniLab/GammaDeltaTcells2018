@@ -33,6 +33,14 @@ rownames(names) <- names$Ensembl.Gene.ID
 # Read in differential expression results
 Th1 <- read.xlsx("../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes_new/Th1 vs Th17.xlsx", sheet = 1)
 Th17 <- read.xlsx("../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Marker_genes_new/Th1 vs Th17.xlsx", sheet = 2)
+
+# Options for plotting
+breaksList <- seq(0, 4.5, length.out = 100)
+breaksList.scaled <- seq(-3, 3, length.out = 100)
+
+colour.scaled <- colorRampPalette(c("dark blue", "white", 
+                                    "dark red"))(length(breaksList.scaled))
+colour.exp <- viridis(length(breaksList))
 ```
 
 # KLRs
@@ -65,14 +73,29 @@ pheatmap(log10(for.heatmap + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))),
          border_color = NA, 
          annotation_row = data.frame(row.names = rownames(for.heatmap),
-                                           regulation = KLRs[match(rownames(for.heatmap),
-                                                                   KLRs$X2),
-                                                             "X3"]))
+                  regulation = KLRs[match(rownames(for.heatmap),KLRs$X2),"X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/KLRs_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+        regulation = KLRs[match(rownames(for.heatmap),KLRs$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
 
@@ -100,7 +123,7 @@ pheatmap(log10(for.heatmap.1 + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap.1),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap.1),
                       condition = sub("_DO.+$", "", colnames(for.heatmap.1))),
          border_color = NA, 
@@ -108,7 +131,24 @@ pheatmap(log10(for.heatmap.1 + 1),
                                            regulation = Cytotoxicity[
                                              match(rownames(for.heatmap.1),
                                             Cytotoxicity$X2),
-                                                             "X3"]))
+                                                             "X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Cytotoxicity_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap.1 + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap.1),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap.1),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap.1))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap.1),
+        regulation = Cytotoxicity[match(rownames(for.heatmap.1),Cytotoxicity$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
 
@@ -136,7 +176,7 @@ pheatmap(log10(for.heatmap.1 + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap.1),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap.1),
                       condition = sub("_DO.+$", "", colnames(for.heatmap.1))),
          border_color = NA, 
@@ -144,7 +184,24 @@ pheatmap(log10(for.heatmap.1 + 1),
                                            regulation = FcRs[
                                              match(rownames(for.heatmap.1),
                                             FcRs$X2),
-                                                             "X3"]))
+                                                             "X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/FcRs_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap.1 + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap.1),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap.1),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap.1))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap.1),
+        regulation = FcRs[match(rownames(for.heatmap.1),FcRs$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
 
@@ -180,14 +237,31 @@ pheatmap(log10(for.heatmap + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))),
          border_color = NA, 
          annotation_row = data.frame(row.names = rownames(for.heatmap),
                                            regulation = Markers[match(rownames(for.heatmap),
                                                                    Markers$X2),
-                                                             "X3"]))
+                                                             "X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Markers_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+        regulation = Markers[match(rownames(for.heatmap),Markers$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
 
@@ -223,14 +297,31 @@ pheatmap(log10(for.heatmap + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))),
          border_color = NA, 
          annotation_row = data.frame(row.names = rownames(for.heatmap),
                                            regulation = Chemokines[match(rownames(for.heatmap),
                                                                    Chemokines$X2),
-                                                             "X3"]))
+                                                             "X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Chemokines_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+        regulation = Chemokines[match(rownames(for.heatmap),Chemokines$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
 
@@ -266,14 +357,31 @@ pheatmap(log10(for.heatmap + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))),
          border_color = NA, 
          annotation_row = data.frame(row.names = rownames(for.heatmap),
                                            regulation = Cytokines[match(rownames(for.heatmap),
                                                                    Cytokines$X2),
-                                                             "X3"]))
+                                                             "X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/Cytokines_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+        regulation = Cytokines[match(rownames(for.heatmap),Cytokines$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
 
@@ -309,13 +417,30 @@ pheatmap(log10(for.heatmap + 1),
          cluster_cols = FALSE, cluster_rows = FALSE, 
          labels_row = names[rownames(for.heatmap),2], 
          show_colnames = FALSE,
-         cellheight = 8, fontsize = 7, color = viridis(100),
+         cellheight = 8, fontsize = 7, color = colour.exp,
          annotation_col = data.frame(row.names = colnames(for.heatmap),
                       condition = sub("_DO.+$", "", colnames(for.heatmap))),
          border_color = NA, 
          annotation_row = data.frame(row.names = rownames(for.heatmap),
                                            regulation = TFs[match(rownames(for.heatmap),
                                                                    TFs$X2),
-                                                             "X3"]))
+                                                             "X3"]),
+         breaks = breaksList)
+dev.off()
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Heatmaps/TFs_scaled.pdf",
+    width = 4, height = 4)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = names[rownames(for.heatmap),2], 
+         show_colnames = FALSE,
+         cellheight = 8, fontsize = 7, 
+         color = colour.scaled,
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))),
+         border_color = NA, 
+         annotation_row = data.frame(row.names = rownames(for.heatmap),
+        regulation = TFs[match(rownames(for.heatmap),TFs$X2),"X3"]),
+        scale = "row", breaks = breaksList.scaled)
 dev.off()
 ```
