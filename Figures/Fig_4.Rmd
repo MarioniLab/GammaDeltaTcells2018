@@ -50,15 +50,46 @@ rownames(annot) <- annot$names
 
 ## TCR gamma
 
-### Vg4 Th1
+### Vg1 Th1
 
 ```{r}
 # Save dataframes in list 
 inv.simps.list <- list()
 
+cur_files <- TRG.files[grepl("Vg1_Th1-", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg1_Th1-", TRG.files)], 107)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+# Calculate inverse simpsons index
+# Inverse Simpsons index
+Vg1.Th1 <- data.frame(inv.Simps(cur_files, cur_names, select = "TCRG-V1", 
+                                subsample = TRUE))
+colnames(Vg1.Th1) <- "Inv_Simps"
+Vg1.Th1$Age <- factor(sapply(rownames(Vg1.Th1), 
+                             function(n){unlist(strsplit(n, "-"))[2]}),
+                      levels = c("young", "old"))
+Vg1.Th1$Replicate <- c(1:5, 1:6)
+
+# Plot results
+p.Vg1.Th1.gamma <- ggplot(Vg1.Th1) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
+  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
+# Statistical test
+t.test(Vg1.Th1[Vg1.Th1$Age == "young","Inv_Simps"],
+       Vg1.Th1[Vg1.Th1$Age == "old","Inv_Simps"])
+
+# Save in list
+inv.simps.list[["TRG_Vg1_Th1"]] <- Vg1.Th1
+```
+
+### Vg4 Th1
+
+```{r}
 cur_files <- TRG.files[grepl("Vg4_Th1-", TRG.files)]
 cur_names <- paste(sub("_unk.*$", "", 
-                 substring(TRG.files[grepl("Vg4_Th1-", TRG.files)], 106)), "-",
+                 substring(TRG.files[grepl("Vg4_Th1-", TRG.files)], 107)), "-",
                  1:length(cur_files), sep = "")
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
@@ -75,7 +106,7 @@ Vg4.Th1$Replicate <- c(1:4, 1:6)
 
 # Plot results
 p.Vg4.Th1.gamma <- ggplot(Vg4.Th1) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red"))
+  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
 # Statistical test
 t.test(Vg4.Th1[Vg4.Th1$Age == "young","Inv_Simps"],
        Vg4.Th1[Vg4.Th1$Age == "old","Inv_Simps"])
@@ -89,7 +120,7 @@ inv.simps.list[["TRG_Vg4_Th1"]] <- Vg4.Th1
 ```{r}
 cur_files <- TRG.files[grepl("Vg4_Th17-", TRG.files)]
 cur_names <- paste(sub("_unk.*$", "", 
-                 substring(TRG.files[grepl("Vg4_Th17-", TRG.files)], 106)), "-",
+                 substring(TRG.files[grepl("Vg4_Th17-", TRG.files)], 107)), "-",
                  1:length(cur_files), sep = "")
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
@@ -106,7 +137,7 @@ Vg4.Th17$Replicate <- c(1:4, 1:6)
 
 # Plot results
 p.Vg4.Th17.gamma <- ggplot(Vg4.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red"))
+  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
 # Statistical test
 t.test(Vg4.Th17[Vg4.Th17$Age == "young","Inv_Simps"],
        Vg4.Th17[Vg4.Th17$Age == "old","Inv_Simps"])
@@ -114,14 +145,76 @@ t.test(Vg4.Th17[Vg4.Th17$Age == "young","Inv_Simps"],
 inv.simps.list[["TRG_Vg4_Th17"]] <- Vg4.Th17
 ```
 
+### Vg6 Th17
+
+```{r}
+cur_files <- TRG.files[grepl("Vg6_Th17-", TRG.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRG.files[grepl("Vg6_Th17-", TRG.files)], 107)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+# Calculate inverse simpsons index
+# Inverse Simpsons index
+Vg6.Th17 <- data.frame(inv.Simps(cur_files, cur_names, select = "TCRG-V6", 
+                                subsample = TRUE))
+colnames(Vg6.Th17) <- "Inv_Simps"
+Vg6.Th17$Age <- factor(sapply(rownames(Vg6.Th17), 
+                             function(n){unlist(strsplit(n, "-"))[2]}),
+                      levels = c("young", "old"))
+Vg6.Th17$Replicate <- c(1:6, 1:4)
+
+# Plot results
+p.Vg6.Th17.gamma <- ggplot(Vg6.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
+  ylim(c(0, 2)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
+# Statistical test
+t.test(Vg6.Th17[Vg6.Th17$Age == "young","Inv_Simps"],
+       Vg6.Th17[Vg6.Th17$Age == "old","Inv_Simps"])
+
+# Save in list
+inv.simps.list[["TRG_Vg6_Th17"]] <- Vg6.Th17
+```
+
 ## TCR delta
+
+### Vg1 Th1
+
+```{r}
+cur_files <- TRD.files[grepl("Vg1_Th1-", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg1_Th1-", TRD.files)], 107)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+# Calculate inverse simpsons index
+# Inverse Simpsons index
+Vg1.Th1 <- data.frame(inv.Simps(cur_files, cur_names, 
+                                subsample = TRUE))
+colnames(Vg1.Th1) <- "Inv_Simps"
+Vg1.Th1$Age <- factor(sapply(rownames(Vg1.Th1), 
+                             function(n){unlist(strsplit(n, "-"))[2]}),
+                      levels = c("young", "old"))
+Vg1.Th1$Replicate <- c(1:5, 1:6)
+
+# Plot results
+p.Vg1.Th1.delta <- ggplot(Vg1.Th1) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
+  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
+# Statistical test
+t.test(Vg1.Th1[Vg1.Th1$Age == "young","Inv_Simps"],
+       Vg1.Th1[Vg1.Th1$Age == "old","Inv_Simps"])
+
+# Save in list
+inv.simps.list[["TRD_Vg1_Th1"]] <- Vg1.Th1
+```
 
 ### Vg4 Th1
 
 ```{r}
 cur_files <- TRD.files[grepl("Vg4_Th1-", TRD.files)]
 cur_names <- paste(sub("_unk.*$", "", 
-                 substring(TRD.files[grepl("Vg4_Th1-", TRD.files)], 106)), "-",
+                 substring(TRD.files[grepl("Vg4_Th1-", TRD.files)], 107)), "-",
                  1:length(cur_files), sep = "")
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
@@ -138,7 +231,7 @@ Vg4.Th1$Replicate <- c(1:4, 1:6)
 
 # Plot results
 p.Vg4.Th1.delta <- ggplot(Vg4.Th1) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red"))
+  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
 # Statistical test
 t.test(Vg4.Th1[Vg4.Th1$Age == "young","Inv_Simps"],
        Vg4.Th1[Vg4.Th1$Age == "old","Inv_Simps"])
@@ -151,7 +244,7 @@ inv.simps.list[["TRD_Vg4_Th1"]] <- Vg4.Th1
 ```{r}
 cur_files <- TRD.files[grepl("Vg4_Th17-", TRD.files)]
 cur_names <- paste(sub("_unk.*$", "", 
-                 substring(TRD.files[grepl("Vg4_Th17-", TRD.files)], 106)), "-",
+                 substring(TRD.files[grepl("Vg4_Th17-", TRD.files)], 107)), "-",
                  1:length(cur_files), sep = "")
 cur_files <- cur_files[order(cur_names)]
 cur_names <- cur_names[order(cur_names)]
@@ -168,12 +261,43 @@ Vg4.Th17$Replicate <- c(1:4, 1:6)
 
 # Plot results
 p.Vg4.Th17.delta <- ggplot(Vg4.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red"))
+  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
 # Statistical test
 t.test(Vg4.Th17[Vg4.Th17$Age == "young","Inv_Simps"],
        Vg4.Th17[Vg4.Th17$Age == "old","Inv_Simps"])
 
 inv.simps.list[["TRD_Vg4_Th17"]] <- Vg4.Th17
+```
+
+### Vg6 Th17
+
+```{r}
+cur_files <- TRD.files[grepl("Vg6_Th17-", TRD.files)]
+cur_names <- paste(sub("_unk.*$", "", 
+                 substring(TRD.files[grepl("Vg6_Th17-", TRD.files)], 107)), "-",
+                 1:length(cur_files), sep = "")
+cur_files <- cur_files[order(cur_names)]
+cur_names <- cur_names[order(cur_names)]
+
+# Calculate inverse simpsons index
+# Inverse Simpsons index
+Vg6.Th17 <- data.frame(inv.Simps(cur_files, cur_names, 
+                                subsample = TRUE))
+colnames(Vg6.Th17) <- "Inv_Simps"
+Vg6.Th17$Age <- factor(sapply(rownames(Vg6.Th17), 
+                             function(n){unlist(strsplit(n, "-"))[2]}),
+                      levels = c("young", "old"))
+Vg6.Th17$Replicate <- c(1:6, 1:4)
+
+# Plot results
+p.Vg6.Th17.delta <- ggplot(Vg6.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
+  ylim(c(0, 4)) + scale_fill_manual(values = c("white", "red"))
+# Statistical test
+t.test(Vg6.Th17[Vg6.Th17$Age == "young","Inv_Simps"],
+       Vg6.Th17[Vg6.Th17$Age == "old","Inv_Simps"])
+
+# Save in list
+inv.simps.list[["TRD_Vg6_Th17"]] <- Vg6.Th17
 write.xlsx(inv.simps.list, "../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_4/InvSimps.xlsx")
 ```
 
@@ -547,8 +671,9 @@ t.test(cur_size$value[cur_size$Age == "Old"],
 # Save figure
 
 ```{r}
-final.1 <- plot_grid(p.Vg4.Th1.gamma, p.Vg4.Th17.gamma, 
-                     p.Vg4.Th1.delta, p.Vg4.Th17.delta, nrow = 1)
+final.1 <- plot_grid(p.Vg1.Th1.gamma, p.Vg4.Th1.gamma, p.Vg4.Th17.gamma, p.Vg6.Th17.gamma, 
+                     p.Vg1.Th1.delta, p.Vg4.Th1.delta, p.Vg4.Th17.delta, p.Vg6.Th17.delta, 
+                     nrow = 1)
 final.2 <- plot_grid(p.Vg1.delta.usage, p.Vg4.Th1.delta.usage,
                      p.Vg4.Th17.delta.usage, p.Vg6.delta.usage, ncol = 2,
                      nrow = 2)
@@ -557,5 +682,5 @@ final.3 <- plot_grid(p.clone, NULL, NULL, NULL, nrow = 1)
 final <- plot_grid(final.1, final.2, final.3, ncol = 1, rel_heights = c(1,2,1))
 
 ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_4/Fig_4.pdf", final,
-       width = 12, height = 15)
+       width = 15, height = 15)
 ```
