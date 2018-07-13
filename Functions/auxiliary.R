@@ -292,16 +292,16 @@ clone_diversity <- function(files, in.names, all.reads = FALSE,
       sum(n$cloneCount[n$cloneCount == 1])/sum(n$cloneCount)
     }))
     mat["Infrequent: < 0.5%",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneCount[n$cloneFraction < 0.005 & n$cloneCount > 1])/sum(n$cloneCount)
+      sum(n$cloneCount[n$cloneFraction < 0.005 & n$cloneCount > 1 & n$cloneCount != 1])/sum(n$cloneCount)
     }))
     mat["Frequent: 0.5% - 0.99",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneCount[n$cloneFraction >= 0.005 & n$cloneFraction < 0.01])/sum(n$cloneCount)
+      sum(n$cloneCount[n$cloneFraction >= 0.005 & n$cloneFraction < 0.01 & n$cloneCount != 1])/sum(n$cloneCount)
     }))
     mat["Expanded: 1% - 1.99%",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneCount[n$cloneFraction >= 0.01 & n$cloneFraction < 0.02])/sum(n$cloneCount)
+      sum(n$cloneCount[n$cloneFraction >= 0.01 & n$cloneFraction < 0.02 & n$cloneCount != 1])/sum(n$cloneCount)
     }))
     mat["Highly expanded: > 2%",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneCount[n$cloneFraction >= 0.02])/sum(n$cloneCount)
+      sum(n$cloneCount[n$cloneFraction >= 0.02 & n$cloneCount != 1])/sum(n$cloneCount)
     }))
   }
   else{
@@ -309,16 +309,16 @@ clone_diversity <- function(files, in.names, all.reads = FALSE,
       sum(n$cloneCount == 1)/nrow(n)
     }))
     mat["Infrequent: < 0.5%",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneFraction < 0.005 & n$cloneCount > 1)/nrow(n)
+      sum(n$cloneFraction < 0.005 & n$cloneCount > 1 & n$cloneCount != 1)/nrow(n)
     }))
     mat["Frequent: 0.5% - 0.99",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneFraction >= 0.005 & n$cloneFraction < 0.01)/nrow(n)
+      sum(n$cloneFraction >= 0.005 & n$cloneFraction < 0.01 & n$cloneCount != 1)/nrow(n)
     }))
     mat["Expanded: 1% - 1.99%",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneFraction >= 0.01 & n$cloneFraction < 0.02)/nrow(n)
+      sum(n$cloneFraction >= 0.01 & n$cloneFraction < 0.02 & n$cloneCount != 1)/nrow(n)
     }))
     mat["Highly expanded: > 2%",] <- unlist(lapply(cur_files, function(n){
-      sum(n$cloneFraction >= 0.02)/nrow(n)
+      sum(n$cloneFraction >= 0.02 & n$cloneCount != 1)/nrow(n)
     }))
   }
   mat
