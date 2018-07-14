@@ -167,7 +167,7 @@ Vg6.Th17$Replicate <- c(1:6, 1:4)
 
 # Plot results
 p.Vg6.Th17.gamma <- ggplot(Vg6.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 2)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
+  ylim(c(0, 60)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
 # Statistical test
 t.test(Vg6.Th17[Vg6.Th17$Age == "young","Inv_Simps"],
        Vg6.Th17[Vg6.Th17$Age == "old","Inv_Simps"])
@@ -291,7 +291,7 @@ Vg6.Th17$Replicate <- c(1:6, 1:4)
 
 # Plot results
 p.Vg6.Th17.delta <- ggplot(Vg6.Th17) + geom_boxplot(aes(Age, Inv_Simps, fill = Age)) + 
-  ylim(c(0, 4)) + scale_fill_manual(values = c("white", "red"))
+  ylim(c(0, 500)) + scale_fill_manual(values = c("white", "red")) + guides(fill=FALSE)
 # Statistical test
 t.test(Vg6.Th17[Vg6.Th17$Age == "young","Inv_Simps"],
        Vg6.Th17[Vg6.Th17$Age == "old","Inv_Simps"])
