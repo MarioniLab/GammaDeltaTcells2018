@@ -1,0 +1,80 @@
+---
+title: "MIXCR and IMGT comparison"
+author: "Nils Eling"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, 
+        encoding = encoding, output_file = '/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/MIXCR_IMGT_comparison.html') })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This script collects sequences that were reconstructed by mixcr and prepares a fasta file to submit to IMGT/V-Quest.
+
+## Read in data
+
+```{r}
+library(readxl)
+library(openxlsx)
+
+# Read in mixcr mapping results - one chain per .txt file
+all.files <- list.files("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Txt_files", full.names = TRUE)
+
+# Read in normalized counts
+norm <- read.table("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Data/NormCounts.txt", sep = "\t", header = TRUE)
+libraries <- sapply(colnames(norm), function(n){unlist(strsplit(n, "_"))[4]})
+
+# Remove low quality libraries
+all.files <- grep(paste(libraries,collapse="|"), all.files, value=TRUE, ignore.case = TRUE)
+
+# All files containing TRD from Vg6 cells
+TRD.files <- all.files[grepl("TRD", all.files) & grepl("Vg6", all.files)]
+
+# Chain annotation
+annot <- as.data.frame(read_xls("/Users/nils/Dropbox (Cambridge University)/GammaDelta/Analysis/Clones/Variable_sequences_to_edit.xls"))
+annot$`IMGT sub-group`[is.na(annot$`IMGT sub-group`)] <- annot$names[is.na(annot$`IMGT sub-group`)]
+rownames(annot) <- annot$names
+```
+
+# Parse in the sequences
+
+Here, we collect the different nt sequences for the TRD chain.
+
+```{r}
+# Merge all tables into a dataframe
+df.all <- do.call("rbind", lapply(TRD.files, function(n){
+  read.table(n, sep = "\t", header = TRUE)
+}))
+
+# Write out fasta files
+library(seqinr)
+
+for(i in 1:5){
+  write.fasta(sequences = as.list(df.all$clonalSequence[((i-1)*50 + 1):(i*50)]), 
+            names = sapply(as.character(df.all$allVHitsWithScore[((i-1)*50 + 1):(i*50)]), function(n){unlist(strsplit(n, "\\*"))[1]}), 
+            file.out = paste("../../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Revisions/mixcr_IMGT/ClonalSequence_", i, ".fa", sep = ""))
+}
+```
+
+We then submitted these fasta sequences to IMGT and collected the output in the form of Excel files.
+Here, we read in the Excel files and merge them.
+
+```{r}
+xlsx.files <- list.files("../../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Revisions/mixcr_IMGT/IMGT_clonal_sequence/", 
+                         full.names = TRUE)
+IMGT.df <- do.call("rbind", lapply(as.list(xlsx.files), function(n){
+  as.data.frame(read_xlsx(n))
+}))
+IMGT.df <- IMGT.df[IMGT.df$`Sequence ID` != "NA",]
+
+# We select the mixcr and IGMT sequence for output
+out <- data.frame(mixcr_output = IMGT.df$`Sequence ID`,
+                  IGMT_output = IMGT.df$`V-GENE and allele`)
+
+# Write output
+write.xlsx(out, "../../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Revisions/mixcr_IMGT/mixcr_IMGT_comparison.xlsx")
+```
