@@ -40,7 +40,49 @@ names <- read.table("../../../Dropbox (Cambridge University)/SST_spermatocytes/A
 rownames(names) <- names$V1
 ```
 
-# Plot marker genes for these cells
+# Plot target genes of Il7 signalling
+
+Here, we visualize target genes of Il7 signalling and compute an "activation" score.
+
+```{r Il7-genes}
+genes <- c("Bcl2", "Mcl1", "Bcl6", "Pim1", "Hk2", "Tfrc", "Ccnd2", "Cish")
+
+for.heatmap <- norm[rownames(names)[match(genes, names$V2)],order(colnames(norm))]
+
+pdf("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/Il7_Heatmap.pdf",
+    width = 10, height = 7)
+pheatmap(log10(for.heatmap + 1), 
+         cluster_cols = FALSE, cluster_rows = FALSE, 
+         labels_row = genes, 
+         show_colnames = FALSE,
+         cellheight = 12, fontsize = 10, color = viridis(100),
+         annotation_col = data.frame(row.names = colnames(for.heatmap),
+                      condition = sub("_DO.+$", "", colnames(for.heatmap))))
+dev.off()
+
+# Calculate averaged Z score
+for.heatmap.z <- t(apply(log(for.heatmap + 1), 1, function(n){(n-mean(n))/sd(n)}))
+plot(colMeans(for.heatmap.z))
+
+Il7_boxplot <- ggplot(data.frame(Il7_score = colMeans(for.heatmap.z),
+                  condition = sub("_DO[0-9]*$", "", colnames(for.heatmap.z)))) +
+  geom_boxplot(aes(condition, Il7_score))
+ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/Il7_score_boxplot.pdf", 
+       Il7_boxplot, width = 12)
+
+# Statistical testing
+# Vg1 Th1
+t.test(colMeans(for.heatmap.z)[grepl("Vg1_Th1_young", colnames(for.heatmap.z))],
+       colMeans(for.heatmap.z)[grepl("Vg1_Th1_old", colnames(for.heatmap.z))])
+t.test(colMeans(for.heatmap.z)[grepl("Vg4_Th1_young", colnames(for.heatmap.z))],
+       colMeans(for.heatmap.z)[grepl("Vg4_Th1_old", colnames(for.heatmap.z))])
+t.test(colMeans(for.heatmap.z)[grepl("Vg4_Th17_young", colnames(for.heatmap.z))],
+       colMeans(for.heatmap.z)[grepl("Vg4_Th17_old", colnames(for.heatmap.z))])
+t.test(colMeans(for.heatmap.z)[grepl("Vg6_Th17_young", colnames(for.heatmap.z))],
+       colMeans(for.heatmap.z)[grepl("Vg6_Th17_old", colnames(for.heatmap.z))])
+```
+
+# Plot marker genes
 
 ```{r marker-genes}
 for.heatmap <- norm[,order(colnames(norm))]
