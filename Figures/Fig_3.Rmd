@@ -356,5 +356,108 @@ ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/DE.p
 # Differential expression testing between gd1 and dg17
 
 ```{r}
+# List to store results
+cur_list <- list()
 
+# Vg4 young - gd1 vs gd17
+cur_data <- raw[,grepl("Vg4_Th1_young|Vg4_Th17_young", colnames(raw))]
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[2]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Th1", "Th17")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Th1 - Th17, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$ID <- names[rownames(cur_res_all),1]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in gd1", 
+                                     "Up in gd17")
+
+# Order based on LFC
+cur_res_all <- cur_res_all[order(cur_res_all$logFC, decreasing = TRUE),]
+
+cur_list[["Vg4_young_gd1-vs-gd17"]] <- cur_res_all
+
+# Vg4 old - gd1 vs gd17
+cur_data <- raw[,grepl("Vg4_Th1_old|Vg4_Th17_old", colnames(raw))]
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[2]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Th1", "Th17")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Th1 - Th17, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$ID <- names[rownames(cur_res_all),1]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in gd1", 
+                                     "Up in gd17")
+
+# Order based on LFC
+cur_res_all <- cur_res_all[order(cur_res_all$logFC, decreasing = TRUE),]
+
+cur_list[["Vg4_old_gd1-vs-gd17"]] <- cur_res_all
+
+# All gd1 vs all gd17
+cur_data <- raw
+
+# Remove lowly expressed genes
+cur_data <- cur_data[rowMeans(cur_data) > 10,]
+cur_groups <- sapply(colnames(cur_data), function(n){unlist(strsplit(n, "_"))[2]})
+
+# Differential expression analysis
+y <- DGEList(counts=cur_data,
+             group=cur_groups)
+y <- calcNormFactors(y)
+design <- model.matrix(~0+y$samples$group)
+colnames(design) <- c("Th1", "Th17")
+y <- estimateDisp(y,design)
+  
+fit <- glmQLFit(y,design, robust = TRUE)
+qlf <- glmQLFTest(fit,coef=2, 
+                contrast = makeContrasts(Th1 - Th17, 
+                                         levels = design))
+cur_res_all <- topTags(qlf, n = nrow(qlf$table))$table
+
+cur_res_all <- cur_res_all[cur_res_all$FDR < 0.1,]
+cur_res_all$Symbol <- names[rownames(cur_res_all),2]
+cur_res_all$ID <- names[rownames(cur_res_all),1]
+cur_res_all$Directionality <- ifelse(cur_res_all$logFC > 0, "Up in gd1", 
+                                     "Up in gd17")
+
+# Order based on LFC
+cur_res_all <- cur_res_all[order(cur_res_all$logFC, decreasing = TRUE),]
+
+cur_list[["All_gd1-vs-gd17"]] <- cur_res_all
+
+# Save background
+write.csv(rownames(cur_data), "../../../Dropbox (Cambridge University)/GammaDelta/Analysis/Results/Th1_Th17_comparison/background_280319.csv", 
+          quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+write.xlsx(cur_list, "../../../Dropbox (Cambridge University)/Gammadelta T cell aging/2_Figures/Tables/Table_S2_notFinal.xlsx")
 ```
