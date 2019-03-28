@@ -45,7 +45,9 @@ rownames(names) <- names$V1
 Here, we visualize target genes of Il7 signalling and compute an "activation" score.
 
 ```{r Il7-genes}
-genes <- c("Bcl2", "Mcl1", "Bcl6", "Pim1", "Hk2", "Tfrc", "Ccnd2", "Cish")
+genes <- c("Bcl2", "Crebbp", "Ep300", "Fyn", "Il2rg", "Il7", "Il7r", 
+           "Jak1", "Jak3", "Lck", "Nmi",
+           "Pik3ca", "Pik3cg", "Pik3r1", "Ptk2b", "Stat5a", "Stat5b")
 
 for.heatmap <- norm[rownames(names)[match(genes, names$V2)],order(colnames(norm))]
 
@@ -64,7 +66,7 @@ dev.off()
 for.heatmap.z <- t(apply(log(for.heatmap + 1), 1, function(n){(n-mean(n))/sd(n)}))
 plot(colMeans(for.heatmap.z))
 
-Il7_boxplot <- ggplot(data.frame(Il7_score = colMeans(for.heatmap.z),
+c <- ggplot(data.frame(Il7_score = colMeans(for.heatmap.z),
                   condition = sub("_DO[0-9]*$", "", colnames(for.heatmap.z)))) +
   geom_boxplot(aes(condition, Il7_score))
 ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/Il7_score_boxplot.pdf", 
@@ -349,4 +351,10 @@ write.xlsx(cur_list, "../../../Dropbox (Cambridge University)/Gammadelta T cell 
 final <- plot_grid(p.Vg1, p.Vg4_Th1, p.Vg4_Th17, p.Vg6, nrow = 1)
 ggsave("../../../Dropbox (Cambridge University)/GammaDelta/Figures/Figure_3/DE.pdf", final,
        width = 20, height = 4)
+```
+
+# Differential expression testing between gd1 and dg17
+
+```{r}
+
 ```
